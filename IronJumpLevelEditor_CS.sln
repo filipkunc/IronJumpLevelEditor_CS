@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C# Express 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronJumpLevelEditor_CS", "IronJumpLevelEditor_CS\IronJumpLevelEditor_CS.csproj", "{05C41E81-A269-4382-8ECA-171405C9B9EA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{05C41E81-A269-4382-8ECA-171405C9B9EA}.Debug|x86.ActiveCfg = Debug|x86
+		{05C41E81-A269-4382-8ECA-171405C9B9EA}.Debug|x86.Build.0 = Debug|x86
+		{05C41E81-A269-4382-8ECA-171405C9B9EA}.Release|x86.ActiveCfg = Release|x86
+		{05C41E81-A269-4382-8ECA-171405C9B9EA}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
