@@ -9,7 +9,9 @@ namespace GLCanvas
 	{
 		deviceContext = nullptr;
 		glRenderingContext = nullptr;
-		sharedContextView = nullptr;		
+		sharedContextView = nullptr;
+		viewOffset.X = 0.0f;
+		viewOffset.Y = 0.0f;
 	}
 
 	GLView::~GLView()
@@ -146,6 +148,8 @@ namespace GLCanvas
 
 		glTranslatef((float)-rect.X, (float)rect.Y + (float)rect.Height, 0);
 		glScalef(1, -1, 1);
+
+		glTranslatef(viewOffset.X, viewOffset.Y, 0.0f);
 	}
 
 	void GLView::DrawGL()

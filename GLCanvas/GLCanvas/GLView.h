@@ -10,6 +10,7 @@ namespace GLCanvas
 		HDC deviceContext;
 		HGLRC glRenderingContext;
 		GLView ^sharedContextView;
+		PointF viewOffset;
 	protected:
 		~GLView();
 
@@ -32,6 +33,12 @@ namespace GLCanvas
 		{ 
 			GLView ^get();
 			void set(GLView ^value); 
+		}
+
+		property PointF ViewOffset
+		{
+			PointF get() { return viewOffset; }
+			void set(PointF value) { viewOffset = value; }
 		}
 	private:
 	#pragma region Windows Form Designer generated code

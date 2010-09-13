@@ -69,6 +69,7 @@ namespace IronJumpLevelEditor_CS
         {
             InitializeComponent();
             factoryView.BackColor = Color.FromArgb(55, 60, 89);
+            levelView_SizeChanged(this, EventArgs.Empty);
         }
 
         private void InitAllTextures(Canvas canvas)
@@ -80,9 +81,9 @@ namespace IronJumpLevelEditor_CS
 
         void DrawGrid(Canvas canvas)
         {
-            Rectangle rect = levelView.ClientRectangle;
-            rect.X = -rect.Width;
-            rect.Y = -rect.Height;
+            Rectangle rect = levelView.ClientRectangle;            
+                        
+            rect.Offset(-(int)levelView.ViewOffset.X, -(int)levelView.ViewOffset.Y);
 
             rect.X /= 32;
             rect.Y /= 32;
@@ -92,11 +93,11 @@ namespace IronJumpLevelEditor_CS
 
             canvas.SetCurrentColor(Color.FromArgb((int)(0.2 * 255), Color.White));
 
-            for (int y = rect.Y; y < rect.Height; y += 32)
-                canvas.DrawLine(new Point(rect.X, y), new Point(rect.Width, y));
+            for (int y = rect.Top; y < rect.Bottom + 32; y += 32)
+                canvas.DrawLine(new Point(rect.Left, y), new Point(rect.Right + 32, y));
 
-            for (int x = rect.X; x < rect.Width; x += 32)
-                canvas.DrawLine(new Point(x, rect.Y), new Point(x, rect.Height));
+            for (int x = rect.Left; x < rect.Right + 32; x += 32)
+                canvas.DrawLine(new Point(x, rect.Top), new Point(x, rect.Bottom + 32));
         }
 
         #region DataSource
@@ -108,7 +109,7 @@ namespace IronJumpLevelEditor_CS
             selectedIndices.Add(gameObjects.Count - 1);
             if (gameObject.NextPart != null)
                 gameObjects.Add(gameObject.NextPart);
-	    }
+        }
 
         private void BeginResize(FPDragHandle handle)
         {
@@ -128,7 +129,7 @@ namespace IronJumpLevelEditor_CS
         void EndMove(PointF move)
         {
 
-        }        
+        }
 
         #endregion
 
@@ -178,10 +179,19 @@ namespace IronJumpLevelEditor_CS
             }
         }
 
+        private PointF LevelViewLocation(MouseEventArgs e)
+        {
+            PointF location = new PointF();
+            location.X = (float)e.Location.X - levelView.ViewOffset.X;
+            location.Y = (float)e.Location.Y - levelView.ViewOffset.Y;
+            return location;
+        }
+
         private void levelView_MouseDown(object sender, MouseEventArgs e)
         {
-            int x = e.Location.X;
-            int y = e.Location.Y;
+            PointF location = LevelViewLocation(e);
+            int x = (int)location.X;
+            int y = (int)location.Y;
             x /= 32;
             x *= 32;
             y /= 32;
@@ -212,7 +222,7 @@ namespace IronJumpLevelEditor_CS
                     for (int i = 0; i < gameObjects.Count; i++)
                     {
                         var gameObject = gameObjects[i];
-                        if (gameObject.Rect.Contains(e.Location))
+                        if (gameObject.Rect.Contains(location))
                         {
                             if (selectedIndices.Contains(i))
                                 selectedIndices.Remove(i);
@@ -229,7 +239,7 @@ namespace IronJumpLevelEditor_CS
                     for (int i = 0; i < gameObjects.Count; i++)
                     {
                         var gameObject = gameObjects[i];
-                        if (gameObject.Rect.Contains(e.Location))
+                        if (gameObject.Rect.Contains(location))
                         {
                             selectedIndices.Add(i);
                             startSelection = false;
@@ -242,7 +252,7 @@ namespace IronJumpLevelEditor_CS
                     for (int i = 0; i < gameObjects.Count; i++)
                     {
                         var gameObject = gameObjects[i];
-                        if (gameObject.Rect.Contains(e.Location))
+                        if (gameObject.Rect.Contains(location))
                         {
                             selectedIndices.Clear();
                             selectedIndices.Add(i);
@@ -260,7 +270,7 @@ namespace IronJumpLevelEditor_CS
                 if (startSelection)
                 {
                     drawingSelection = true;
-                    endSelection = beginSelection = e.Location;
+                    endSelection = beginSelection = location;
                 }
             }
 
@@ -269,6 +279,7 @@ namespace IronJumpLevelEditor_CS
 
         private void levelView_MouseMoved(object sender, MouseEventArgs e)
         {
+            PointF location = LevelViewLocation(e);
             currentHandle = FPDragHandle.None;
 
             const float handleSize = 14.0f;
@@ -287,20 +298,20 @@ namespace IronJumpLevelEditor_CS
                     handleRect.X = handlePoint.X - handleRect.Width / 2.0f;
                     handleRect.Y = handlePoint.Y - handleRect.Height / 2.0f;
 
-                    if (handleRect.Contains(e.Location))
+                    if (handleRect.Contains(location))
                     {
                         currentHandle = handle;
-                        beginMovePoint = endMovePoint = e.Location;
+                        beginMovePoint = endMovePoint = location;
                         break;
                     }
                 }
 
                 if (currentHandle == FPDragHandle.None)
                 {
-                    if (draggedObject.Rect.Contains(e.Location))
+                    if (draggedObject.Rect.Contains(location))
                     {
                         currentHandle = FPDragHandle.Center;
-                        beginMovePoint = endMovePoint = e.Location;
+                        beginMovePoint = endMovePoint = location;
                     }
                 }
             }
@@ -309,10 +320,10 @@ namespace IronJumpLevelEditor_CS
                 foreach (var index in selectedIndices)
                 {
                     var gameObject = gameObjects[index];
-                    if (gameObject.Rect.Contains(e.Location))
+                    if (gameObject.Rect.Contains(location))
                     {
                         currentHandle = FPDragHandle.Center;
-                        beginMovePoint = endMovePoint = e.Location;
+                        beginMovePoint = endMovePoint = location;
                         break;
                     }
                 }
@@ -324,47 +335,48 @@ namespace IronJumpLevelEditor_CS
 
         private void levelView_MouseDragged(object sender, MouseEventArgs e)
         {
+            PointF location = LevelViewLocation(e);
             if (drawingSelection)
             {
-                endSelection = e.Location;
+                endSelection = location;
             }
             else if (currentHandle != FPDragHandle.None)
             {
                 switch (currentHandle)
                 {
                     case FPDragHandle.TopLeft:
-                        ResizeDraggedObjectTop(e.Location.Y);
-                        ResizeDraggedObjectLeft(e.Location.X);
+                        ResizeDraggedObjectTop(location.Y);
+                        ResizeDraggedObjectLeft(location.X);
                         break;
                     case FPDragHandle.TopRight:
-                        ResizeDraggedObjectTop(e.Location.Y);
-                        ResizeDraggedObjectRight(e.Location.X);
+                        ResizeDraggedObjectTop(location.Y);
+                        ResizeDraggedObjectRight(location.X);
                         break;
                     case FPDragHandle.BottomLeft:
-                        ResizeDraggedObjectBottom(e.Location.Y);
-                        ResizeDraggedObjectLeft(e.Location.X);
+                        ResizeDraggedObjectBottom(location.Y);
+                        ResizeDraggedObjectLeft(location.X);
                         break;
                     case FPDragHandle.BottomRight:
-                        ResizeDraggedObjectBottom(e.Location.Y);
-                        ResizeDraggedObjectRight(e.Location.X);
+                        ResizeDraggedObjectBottom(location.Y);
+                        ResizeDraggedObjectRight(location.X);
                         break;
                     case FPDragHandle.MiddleTop:
-                        ResizeDraggedObjectTop(e.Location.Y);
+                        ResizeDraggedObjectTop(location.Y);
                         break;
                     case FPDragHandle.MiddleBottom:
-                        ResizeDraggedObjectBottom(e.Location.Y);
+                        ResizeDraggedObjectBottom(location.Y);
                         break;
                     case FPDragHandle.MiddleLeft:
-                        ResizeDraggedObjectLeft(e.Location.X);
+                        ResizeDraggedObjectLeft(location.X);
                         break;
                     case FPDragHandle.MiddleRight:
-                        ResizeDraggedObjectRight(e.Location.X);
+                        ResizeDraggedObjectRight(location.X);
                         break;
                     case FPDragHandle.Center:
                         if (selectedIndices.Count == 1)
-                            MoveDraggedObject(e.Location.X, e.Location.Y);
+                            MoveDraggedObject(location.X, location.Y);
                         else
-                            MoveSelectedObjects(e.Location.X, e.Location.Y);
+                            MoveSelectedObjects(location.X, location.Y);
                         break;
                     default:
                         break;
@@ -372,8 +384,8 @@ namespace IronJumpLevelEditor_CS
             }
             else if (selectedFactory != null)
             {
-                int widthSegments = (int)((e.Location.X - endMovePoint.X + 16.0f) / 32.0f);
-                int heightSegments = (int)((e.Location.Y - endMovePoint.Y + 16.0f) / 32.0f);
+                int widthSegments = (int)((location.X - endMovePoint.X + 16.0f) / 32.0f);
+                int heightSegments = (int)((location.Y - endMovePoint.Y + 16.0f) / 32.0f);
 
                 PointF draggedObjectLocation = endMovePoint;
                 if (widthSegments < 0)
@@ -455,7 +467,7 @@ namespace IronJumpLevelEditor_CS
             levelView.Invalidate();
             factoryView.Invalidate();
         }
-        
+
         #endregion
 
         #region Factory View
@@ -485,14 +497,6 @@ namespace IronJumpLevelEditor_CS
         private void factoryView_Resize(object sender, EventArgs e)
         {
             factoryView.Invalidate();
-        }
-
-        private void runToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            using (GameForm gameForm = new GameForm(levelView, gameObjects))
-            {
-                gameForm.ShowDialog();
-            }
         }
 
         private void factoryView_MouseClick(object sender, MouseEventArgs e)
@@ -732,5 +736,109 @@ namespace IronJumpLevelEditor_CS
         }
 
         #endregion
+
+        #region Main Menu
+
+        private void newLevelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            gameObjects.Clear();
+            selectedFactory = null;
+            levelView.Invalidate();
+            factoryView.Invalidate();
+        }
+
+        private void openLevelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void saveLevelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void undoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void redoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void duplicateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            List<FPGameObject> duplicates = new List<FPGameObject>();
+            List<FPGameObject> nextParts = new List<FPGameObject>();
+
+            foreach (var index in selectedIndices)
+            {
+                var gameObject = gameObjects[index];
+                var duplicate = gameObject.Duplicate(32.0f, 32.0f);
+                if (duplicate != null)
+                {
+                    duplicates.Add(duplicate);
+                    if (duplicate.NextPart != null)
+                    {
+                        nextParts.Add(duplicate.NextPart);
+                    }
+                }
+            }
+
+            selectedIndices.Clear();
+            gameObjects.AddRange(duplicates);
+            for (int i = gameObjects.Count - duplicates.Count; i < gameObjects.Count; i++)
+                selectedIndices.Add(i);
+
+            gameObjects.AddRange(nextParts);
+            for (int i = gameObjects.Count - nextParts.Count; i < gameObjects.Count; i++)
+                selectedIndices.Add(i);
+
+            levelView.Invalidate();
+        }
+
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void runToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (GameForm gameForm = new GameForm(levelView, gameObjects))
+            {
+                gameForm.ShowDialog();
+            }
+        }
+
+        #endregion
+
+        #region Scrolling
+
+        private void levelView_SizeChanged(object sender, EventArgs e)
+        {
+            Size size = levelView.ClientSize;
+            hScrollBarLevelView.Maximum = Math.Max(8000 - size.Width, 0);
+            vScrollBarLevelView.Maximum = Math.Max(8000 - size.Height, 0);            
+        }
+
+        private void hScrollBarLevelView_ValueChanged(object sender, EventArgs e)
+        {
+            levelView.ViewOffset = new PointF(-hScrollBarLevelView.Value, -vScrollBarLevelView.Value);
+            levelView.Invalidate();
+        }
+
+        private void vScrollBarLevelView_ValueChanged(object sender, EventArgs e)
+        {
+            levelView.ViewOffset = new PointF(-hScrollBarLevelView.Value, -vScrollBarLevelView.Value);
+            levelView.Invalidate();
+        }
+
+        #endregion        
     }
 }

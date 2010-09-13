@@ -43,9 +43,9 @@ namespace IronJumpLevelEditor_CS
             game.MoveWorld(game.Player.X - playerPosition.X, game.Player.Y - playerPosition.Y);
         }
 
-        protected override void OnLoad(EventArgs e)
+        protected override void OnShown(EventArgs e)
         {
-            base.OnLoad(e);
+            base.OnShown(e);
             gameView.Focus();
             timer60FPS.Start();
         }
