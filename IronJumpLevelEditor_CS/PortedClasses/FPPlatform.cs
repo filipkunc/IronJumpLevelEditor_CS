@@ -53,6 +53,8 @@ namespace IronJumpLevelEditor_CS.PortedClasses
         {
             FPPlatform duplicated = new FPPlatform();
             duplicated.Move(X + offsetX, Y + offsetY);
+            duplicated.WidthSegments = WidthSegments;
+            duplicated.HeightSegments = HeightSegments;
             return duplicated;
         }
 

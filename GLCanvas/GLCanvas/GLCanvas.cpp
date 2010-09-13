@@ -75,23 +75,40 @@ namespace GLCanvas
 		glColor4ub(color.R, color.G, color.B, color.A);
 	}
 
-	void Canvas::DrawLine(Point a, Point b)
+	void Canvas::SetLineWidth(float width)
 	{
-		glBegin(GL_LINES);
-		glVertex2i(a.X, a.Y);
-		glVertex2i(b.X, b.Y);
+		glLineWidth(width);
+	}
+
+	void Canvas::SetPointSize(float size)
+	{
+		glPointSize(size);
+	}
+
+	void Canvas::DrawPoint(PointF a)
+	{
+		glBegin(GL_POINTS);
+		glVertex2f(a.X, a.Y);
 		glEnd();
 	}
 
-	void Canvas::FillRectangle(System::Drawing::Rectangle rect)
+	void Canvas::DrawLine(PointF a, PointF b)
 	{
-		glRecti(rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height);
+		glBegin(GL_LINES);
+		glVertex2f(a.X, a.Y);
+		glVertex2f(b.X, b.Y);
+		glEnd();
 	}
 
-	void Canvas::DrawRectangle(System::Drawing::Rectangle rect)
+	void Canvas::FillRectangle(RectangleF rect)
+	{
+		glRectf(rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height);
+	}
+
+	void Canvas::DrawRectangle(RectangleF rect)
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);		
-		glRecti(rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height);
+		glRectf(rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
@@ -103,6 +120,8 @@ namespace GLCanvas
 		unsigned int textureID;
 		::CreateTexture((GLubyte *)data->Scan0.ToPointer(), 4, &textureID, rect.Width, rect.Height, false);
 		
+		bitmap->UnlockBits(data);
+
 		return gcnew Texture(textureID, (float)rect.Width, (float)rect.Height);
 	}	
 }

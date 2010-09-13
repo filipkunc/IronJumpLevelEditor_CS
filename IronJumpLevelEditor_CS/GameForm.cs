@@ -17,20 +17,30 @@ namespace IronJumpLevelEditor_CS
         FPGame game = null;
         HashSet<int> pressedKeys = null;
 
-        public GameForm(GLView sharedContextView)
+        public GameForm(GLView sharedContextView, IEnumerable<FPGameObject> gameObjects)
         {
             InitializeComponent();
             gameView.SharedContextView = sharedContextView;
 
             game = new FPGame(gameView.Width, gameView.Height);
-
-            FPPlatform platform = new FPPlatform();
-            platform.Move(50.0f, 300.0f);
-            platform.WidthSegments = 10;
-            platform.HeightSegments = 4;
-
-            game.GameObjects.Add(platform);
             pressedKeys = new HashSet<int>();
+
+            PointF playerPosition = PointF.Empty;
+
+            foreach (var gameObject in gameObjects)
+            {
+                if (gameObject is FPPlayer)
+                {
+                    playerPosition.X = gameObject.X;
+                    playerPosition.Y = gameObject.Y;
+                }
+                else
+                {
+                    game.GameObjects.Add(gameObject.Duplicate(0.0f, 0.0f));
+                }
+            }
+
+            game.MoveWorld(game.Player.X - playerPosition.X, game.Player.Y - playerPosition.Y);
         }
 
         protected override void OnLoad(EventArgs e)

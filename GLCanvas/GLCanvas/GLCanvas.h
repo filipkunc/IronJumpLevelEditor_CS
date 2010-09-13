@@ -17,9 +17,12 @@ namespace GLCanvas
 		void DisableBlend();
 
 		void SetCurrentColor(Color color);
-		void DrawLine(Point a, Point b);
-		void FillRectangle(System::Drawing::Rectangle rect);
-		void DrawRectangle(System::Drawing::Rectangle rect);
+		void SetLineWidth(float width);
+		void SetPointSize(float size);
+		void DrawLine(PointF a, PointF b);
+		void DrawPoint(PointF a);
+		void FillRectangle(RectangleF rect);
+		void DrawRectangle(RectangleF rect);
 
 		Texture ^CreateTexture(Bitmap ^bitmap);		
 	};

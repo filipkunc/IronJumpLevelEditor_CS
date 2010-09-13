@@ -49,8 +49,8 @@
             this.factoryView.Size = new System.Drawing.Size(80, 463);
             this.factoryView.TabIndex = 0;
             this.factoryView.TabStop = false;
-            this.factoryView.Click += new System.EventHandler(this.factoryView_Click);
             this.factoryView.Paint += new System.Windows.Forms.PaintEventHandler(this.factoryView_Paint);
+            this.factoryView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.factoryView_MouseClick);
             this.factoryView.Resize += new System.EventHandler(this.factoryView_Resize);
             // 
             // levelView
@@ -59,6 +59,7 @@
             this.levelView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.levelView.Location = new System.Drawing.Point(80, 24);
             this.levelView.Name = "levelView";
+            this.levelView.SharedContextView = null;
             this.levelView.Size = new System.Drawing.Size(647, 463);
             this.levelView.TabIndex = 0;
             this.levelView.TabStop = false;
@@ -96,7 +97,7 @@
             // 
             this.runToolStripMenuItem.Name = "runToolStripMenuItem";
             this.runToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.runToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.runToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
             this.runToolStripMenuItem.Text = "Run";
             this.runToolStripMenuItem.Click += new System.EventHandler(this.runToolStripMenuItem_Click);
             // 
