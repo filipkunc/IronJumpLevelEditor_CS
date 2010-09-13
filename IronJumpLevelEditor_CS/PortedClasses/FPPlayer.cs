@@ -5,11 +5,19 @@ using System.Text;
 using System.Drawing;
 using GLCanvas;
 using IronJumpLevelEditor_CS.Properties;
+using System.Diagnostics;
 
 namespace IronJumpLevelEditor_CS.PortedClasses
 {
     public class FPPlayer : FPGameObject
     {
+        static Texture playerTexture = null;
+
+        public static void InitTextures(Canvas canvas)
+        {
+            playerTexture = canvas.CreateTexture(Resources.ball);
+        }
+
         public const float tolerance = 3.0f;
         public const float maxSpeed = 5.8f;
         public const float speedPowerUp = 1.5f;
@@ -23,26 +31,7 @@ namespace IronJumpLevelEditor_CS.PortedClasses
         bool jumping;
 
         int speedUpCounter;
-
-        public FPPlayer()
-        {
-            X = 0.0f;
-            Y = 0.0f;
-            MoveX = 0.0f;
-            MoveY = 0.0f;
-            jumping = false;
-            Alpha = 1.0f;
-            IsVisible = true;
-            Rotation = 0.0f;
-        }
-
-        static Texture playerTexture;
-
-        public static void InitTextures(Canvas canvas)
-        {
-            playerTexture = canvas.CreateTexture(Resources.ball);
-        }
-
+        
         public float X { get; private set; }
         public float Y { get; private set; }
         public RectangleF Rect { get { return new RectangleF(X, Y, 32.0f, 32.0f); } }
@@ -58,6 +47,25 @@ namespace IronJumpLevelEditor_CS.PortedClasses
         public float Alpha { get; set; }
         public float Rotation { get; set; }
 
+        public FPPlayer()
+        {
+            X = 0.0f;
+            Y = 0.0f;
+            MoveX = 0.0f;
+            MoveY = 0.0f;
+            jumping = false;
+            Alpha = 1.0f;
+            IsVisible = true;
+            Rotation = 0.0f;
+        }
+
+        public FPPlayer(float width, float height)
+            : this()
+        {
+            X = width / 2.0f - 32.0f / 2.0f;
+            Y = height / 2.0f - 32.0f / 2.0f;
+        }
+
         public void Move(float offsetX, float offsetY)
         {
             X += offsetX;
@@ -66,7 +74,7 @@ namespace IronJumpLevelEditor_CS.PortedClasses
 
         public void Draw(Canvas canvas)
         {
-            playerTexture.Draw(new PointF(X, Y), Rotation);
+            playerTexture.Draw(new PointF(X, Y), Rotation);            
         }
 
         public FPGameObject Duplicate(float offsetX, float offsetY)
@@ -75,8 +83,7 @@ namespace IronJumpLevelEditor_CS.PortedClasses
             duplicated.Move(X + offsetX, Y + offsetY);
             return duplicated;
         }
-
-
+        
         public void Update(FPGameProtocol game)
         {
             PointF inputAcceleration = game.InputAcceleration;
@@ -145,7 +152,6 @@ namespace IronJumpLevelEditor_CS.PortedClasses
             Alpha += 0.07f;
             if (Alpha > (float)Math.PI)
                 Alpha -= (float)Math.PI;
-
         }
 
         public bool CollisionLeftRight(FPGameProtocol game)

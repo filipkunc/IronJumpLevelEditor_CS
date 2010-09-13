@@ -64,6 +64,5 @@ namespace IronJumpLevelEditor_CS.PortedClasses
                 return true;
             return false;
         }
-
     }
 }

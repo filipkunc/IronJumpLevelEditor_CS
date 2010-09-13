@@ -9,6 +9,7 @@ namespace GLCanvas
 
 		HDC deviceContext;
 		HGLRC glRenderingContext;
+		GLView ^sharedContextView;
 	protected:
 		~GLView();
 
@@ -26,6 +27,12 @@ namespace GLCanvas
 		void DrawGL();
 
 		event EventHandler<CanvasEventArgs ^> ^PaintCanvas;
+		
+		property GLView ^SharedContextView
+		{ 
+			GLView ^get();
+			void set(GLView ^value); 
+		}
 	private:
 	#pragma region Windows Form Designer generated code
 		/// <summary>

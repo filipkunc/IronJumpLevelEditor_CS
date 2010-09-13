@@ -81,6 +81,7 @@
     <ClInclude Include="CanvasEventArgs.h" />
     <ClInclude Include="GLCanvas.h" />
     <ClInclude Include="GLView.h" />
+    <ClInclude Include="FPMath.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="Texture.h" />
@@ -90,6 +91,7 @@
     <ClCompile Include="CanvasEventArgs.cpp" />
     <ClCompile Include="GLCanvas.cpp" />
     <ClCompile Include="GLView.cpp" />
+    <ClCompile Include="FPMath.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

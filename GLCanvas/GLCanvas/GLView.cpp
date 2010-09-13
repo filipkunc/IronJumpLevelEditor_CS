@@ -7,7 +7,9 @@ namespace GLCanvas
 {
 	GLView::GLView(void)
 	{
-
+		deviceContext = nullptr;
+		glRenderingContext = nullptr;
+		sharedContextView = nullptr;		
 	}
 
 	GLView::~GLView()
@@ -17,6 +19,16 @@ namespace GLCanvas
 		{
 			delete components;
 		}
+	}
+
+	GLView ^GLView::SharedContextView::get()
+	{
+		return sharedContextView;
+	}
+
+	void GLView::SharedContextView::set(GLView ^value)
+	{
+		sharedContextView = value;
 	}
 
 	#pragma region OnEvents
@@ -88,8 +100,15 @@ namespace GLCanvas
 			Trace::WriteLine("Unable to set pixel format");
 			return;
 		}
+
+		wglMakeCurrent(0, 0);
+
 		//Create rendering context
 		glRenderingContext = wglCreateContext(deviceContext);
+		if (sharedContextView != nullptr)
+		{
+			wglShareLists(sharedContextView->glRenderingContext, glRenderingContext);
+		}
 		if (!glRenderingContext)
 		{
 			Trace::WriteLine("Unable to get rendering context");

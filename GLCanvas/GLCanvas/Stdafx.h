@@ -5,6 +5,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <math.h>
 #include <gl/GL.h>
 #include <gl/GLU.h>
 

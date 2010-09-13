@@ -9,6 +9,7 @@ using System.Text;
 using System.Windows.Forms;
 using GLCanvas;
 using IronJumpLevelEditor_CS.Properties;
+using IronJumpLevelEditor_CS.PortedClasses;
 
 namespace IronJumpLevelEditor_CS
 {
@@ -19,19 +20,18 @@ namespace IronJumpLevelEditor_CS
         Point endSelection;
 
         bool texturesLoaded = false;
-        Texture ball = null;
-
-        List<Bitmap> images = new List<Bitmap>
+        
+        List<GameObjectFactory> factories = new List<GameObjectFactory>
         {
-            Resources.ball,
-            Resources.plos_marble,
-            Resources.movable,
-            Resources.vytah01,
-            Resources.diamond,
-            Resources.magnet,
-            Resources.speed_symbol,
-            Resources.trampoline01,
-            Resources.exit
+            new GameObjectFactory (Resources.ball, () => new FPPlayer()),
+            new GameObjectFactory (Resources.plos_marble, () => new FPPlatform()),
+            new GameObjectFactory (Resources.movable, () => null),
+            new GameObjectFactory (Resources.vytah01, () => null),
+            new GameObjectFactory (Resources.diamond, () => null),
+            new GameObjectFactory (Resources.magnet, () => null),
+            new GameObjectFactory (Resources.speed_symbol, () => null),
+            new GameObjectFactory (Resources.trampoline01, () => null),
+            new GameObjectFactory (Resources.exit, () => null),            
         };
 
         Rectangle SelectionRect
@@ -50,7 +50,14 @@ namespace IronJumpLevelEditor_CS
         public DocumentForm()
         {
             InitializeComponent();
-            factoryView.BackColor = Color.FromArgb(55, 60, 89);
+            factoryView.BackColor = Color.FromArgb(55, 60, 89);           
+        }
+
+        private void InitAllTextures(Canvas canvas)
+        {
+            FPGame.InitTexture(canvas);
+            FPPlayer.InitTextures(canvas);
+            FPPlatform.InitTextures(canvas);            
         }
 
         private void levelView_PaintCanvas(object sender, CanvasEventArgs e)
@@ -59,7 +66,7 @@ namespace IronJumpLevelEditor_CS
 
             if (!texturesLoaded)
             {
-                ball = canvas.CreateTexture(Resources.ball);
+                InitAllTextures(canvas);
                 texturesLoaded = true;
             }
 
@@ -70,7 +77,6 @@ namespace IronJumpLevelEditor_CS
 
             canvas.EnableTexturing();
             canvas.SetCurrentColor(Color.White);
-            ball.Draw(new PointF(10.0f, 20.0f));
 
             canvas.DisableTexturing();
             DrawSelection(canvas);
@@ -134,22 +140,36 @@ namespace IronJumpLevelEditor_CS
         {
             Graphics g = e.Graphics;
             Rectangle borderRect = factoryView.ClientRectangle;
+            
             borderRect.Width--;
             borderRect.Height--;
             g.DrawRectangle(new Pen(Color.FromArgb(100, Color.White)), borderRect);
 
             Rectangle rc = new Rectangle(8, 5, 32, 32);
-            foreach (var image in images)
+            foreach (var factory in factories)
             {
-                rc.Size = image.Size;
-                g.DrawImage(image, rc);
-                rc.Y += image.Height + 5;
+                rc.Size = factory.Image.Size;
+                g.DrawImage(factory.Image, rc);
+                rc.Y += factory.Image.Height + 5;
             }
         }
 
         private void factoryView_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void factoryView_Resize(object sender, EventArgs e)
+        {
+            factoryView.Invalidate();
+        }
+
+        private void runToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (GameForm gameForm = new GameForm(levelView))
+            {
+                gameForm.ShowDialog();
+            }
         }
     }
 }
