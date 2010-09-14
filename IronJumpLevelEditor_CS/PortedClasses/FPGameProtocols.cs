@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using GLCanvas;
+using System.Xml.Linq;
 
 namespace IronJumpLevelEditor_CS.PortedClasses
 {
@@ -40,5 +41,8 @@ namespace IronJumpLevelEditor_CS.PortedClasses
         FPGameObject NextPart { get; }
 
         void Update(FPGameProtocol game);
+
+        void InitFromElement(XElement element);
+        void WriteToElement(XElement element);
     }
 }

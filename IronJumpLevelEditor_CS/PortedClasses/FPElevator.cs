@@ -5,6 +5,7 @@ using System.Text;
 using System.Drawing;
 using GLCanvas;
 using IronJumpLevelEditor_CS.Properties;
+using System.Xml.Linq;
 
 namespace IronJumpLevelEditor_CS.PortedClasses
 {
@@ -318,6 +319,24 @@ namespace IronJumpLevelEditor_CS.PortedClasses
             duplicated.EndY = EndY + offsetY;            
             return duplicated;
         }
+
+        public void InitFromElement(XElement element)
+        {
+            StartX = X = element.ParseFloat("x");
+            StartY = Y = element.ParseFloat("y");
+            EndX = element.ParseFloat("endX");
+            EndY = element.ParseFloat("endY");
+            WidthSegments = element.ParseInt("widthSegments");            
+        }
+
+        public void WriteToElement(XElement element)
+        {
+            element.WriteFloat("x", X);
+            element.WriteFloat("y", Y);
+            element.WriteFloat("endX", EndX);
+            element.WriteFloat("endY", EndY);
+            element.WriteInt("widthSegments", WidthSegments);            
+        }
     }
 
     public class FPElevatorEnd : FPGameObject
@@ -368,6 +387,16 @@ namespace IronJumpLevelEditor_CS.PortedClasses
 
             canvas.SetCurrentColor(Color.FromArgb(255, 0, 255, 0));
             canvas.DrawLine(start.MiddlePoint(), end.MiddlePoint());
+        }
+
+        public void InitFromElement(XElement element)
+        {
+            
+        }
+
+        public void WriteToElement(XElement element)
+        {
+            
         }
     }
 }

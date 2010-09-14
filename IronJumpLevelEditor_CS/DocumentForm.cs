@@ -10,6 +10,8 @@ using System.Windows.Forms;
 using GLCanvas;
 using IronJumpLevelEditor_CS.Properties;
 using IronJumpLevelEditor_CS.PortedClasses;
+using System.Xml.Linq;
+using System.Reflection;
 
 namespace IronJumpLevelEditor_CS
 {
@@ -756,12 +758,42 @@ namespace IronJumpLevelEditor_CS
 
         private void openLevelToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                gameObjects.Clear();
+                selectedIndices.Clear();
 
+                XElement root = XElement.Load(openFileDialog.FileName);
+                foreach (var element in root.Elements())
+                {
+                    var type = Type.GetType("IronJumpLevelEditor_CS.PortedClasses." + element.Name.ToString());
+                    var gameObject = (FPGameObject)Activator.CreateInstance(type);
+                    gameObject.InitFromElement(element);
+                    gameObjects.Add(gameObject);
+                    if (gameObject.NextPart != null)
+                        gameObjects.Add(gameObject.NextPart);
+                }
+
+                levelView.Invalidate();
+            }
         }
 
         private void saveLevelToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                XElement root = new XElement("IronJumpLevel");
+                foreach (var gameObject in gameObjects)
+                {
+                    if (gameObject is FPElevatorEnd)
+                        continue;
 
+                    XElement gameObjectElement = new XElement(gameObject.GetType().Name);
+                    gameObject.WriteToElement(gameObjectElement);
+                    root.Add(gameObjectElement);
+                }
+                root.Save(saveFileDialog.FileName);
+            }
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)

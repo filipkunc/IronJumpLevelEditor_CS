@@ -5,6 +5,7 @@ using System.Text;
 using System.Drawing;
 using GLCanvas;
 using IronJumpLevelEditor_CS.Properties;
+using System.Xml.Linq;
 
 namespace IronJumpLevelEditor_CS.PortedClasses
 {
@@ -60,6 +61,22 @@ namespace IronJumpLevelEditor_CS.PortedClasses
         public void Update(FPGameProtocol game)
         {
             
-        }        
+        }
+
+        public void InitFromElement(XElement element)
+        {
+            X = element.ParseFloat("x");
+            Y = element.ParseFloat("y");
+            WidthSegments = element.ParseInt("widthSegments");
+            HeightSegments = element.ParseInt("heightSegments");
+        }
+
+        public void WriteToElement(XElement element)
+        {
+            element.WriteFloat("x", X);
+            element.WriteFloat("y", Y);
+            element.WriteInt("widthSegments", WidthSegments);
+            element.WriteInt("heightSegments", HeightSegments);
+        }
     }
 }

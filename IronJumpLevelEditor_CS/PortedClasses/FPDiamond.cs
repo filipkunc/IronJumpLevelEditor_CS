@@ -5,6 +5,7 @@ using System.Text;
 using System.Drawing;
 using GLCanvas;
 using IronJumpLevelEditor_CS.Properties;
+using System.Xml.Linq;
 
 namespace IronJumpLevelEditor_CS.PortedClasses
 {
@@ -61,6 +62,18 @@ namespace IronJumpLevelEditor_CS.PortedClasses
             var playerRect = game.Player.Rect;
             if (playerRect.IntersectsWith(this.Rect))
                IsVisible = false;
+        }
+
+        public void InitFromElement(XElement element)
+        {
+            X = element.ParseFloat("x");
+            Y = element.ParseFloat("y");            
+        }
+
+        public void WriteToElement(XElement element)
+        {
+            element.WriteFloat("x", X);
+            element.WriteFloat("y", Y);            
         }
     }
 }

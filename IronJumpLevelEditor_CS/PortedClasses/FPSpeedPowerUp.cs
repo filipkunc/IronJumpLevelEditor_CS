@@ -5,6 +5,7 @@ using System.Text;
 using System.Drawing;
 using GLCanvas;
 using IronJumpLevelEditor_CS.Properties;
+using System.Xml.Linq;
 
 namespace IronJumpLevelEditor_CS.PortedClasses
 {
@@ -75,6 +76,18 @@ namespace IronJumpLevelEditor_CS.PortedClasses
         public void Draw(FPCanvas canvas)
         {
             speedPowerUpTexture.Draw(new PointF(X, Y));
+        }
+
+        public void InitFromElement(XElement element)
+        {
+            X = element.ParseFloat("x");
+            Y = element.ParseFloat("y");
+        }
+
+        public void WriteToElement(XElement element)
+        {
+            element.WriteFloat("x", X);
+            element.WriteFloat("y", Y);
         }
     }
 }
