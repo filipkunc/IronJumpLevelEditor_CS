@@ -45,8 +45,8 @@ namespace IronJumpLevelEditor_CS
             new GameObjectFactory (Resources.diamond, () => new FPDiamond()),
             new GameObjectFactory (Resources.magnet, () => new FPMagnet()),
             new GameObjectFactory (Resources.speed_symbol, () => new FPSpeedPowerUp()),
-            new GameObjectFactory (Resources.trampoline01, () => null),
-            new GameObjectFactory (Resources.exit, () => null),            
+            new GameObjectFactory (Resources.trampoline01, () => new FPTrampoline()),
+            new GameObjectFactory (Resources.exit, () => new FPExit()),            
         };
 
         List<FPGameObject> gameObjects = new List<FPGameObject>();
@@ -82,6 +82,8 @@ namespace IronJumpLevelEditor_CS
             FPMovablePlatform.InitTextures(canvas);
             FPMagnet.InitTextures(canvas);
             FPSpeedPowerUp.InitTextures(canvas);
+            FPTrampoline.InitTextures(canvas);
+            FPExit.InitTextures(canvas);
         }
 
         void DrawGrid(FPCanvas canvas)

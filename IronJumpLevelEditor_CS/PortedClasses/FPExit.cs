@@ -8,18 +8,18 @@ using IronJumpLevelEditor_CS.Properties;
 
 namespace IronJumpLevelEditor_CS.PortedClasses
 {
-    public class FPDiamond : FPGameObject
+    public class FPExit : FPGameObject
     {
-        static FPTexture diamondTexture = null;
+        static FPTexture exitTexture = null;
 
         public static void InitTextures(FPCanvas canvas)
         {
-            diamondTexture = canvas.CreateTexture(Resources.diamond);
+            exitTexture = canvas.CreateTexture(Resources.exit);
         }
 
         public float X { get; private set; }
         public float Y { get; private set; }
-        public RectangleF Rect { get { return new RectangleF(X, Y, 32.0f, 32.0f); } }
+        public RectangleF Rect { get { return new RectangleF(X, Y, 64.0f, 64.0f); } }
         public bool IsVisible { get; set; }
         public bool IsTransparent { get { return true; } }
         public bool IsPlatform { get { return false; } }
@@ -28,7 +28,7 @@ namespace IronJumpLevelEditor_CS.PortedClasses
         public int HeightSegments { get { return 0; } set { } }
         public FPGameObject NextPart { get { return null; } }
 
-        public FPDiamond()
+        public FPExit()
         {
             X = 0.0f;
             Y = 0.0f;
@@ -43,12 +43,12 @@ namespace IronJumpLevelEditor_CS.PortedClasses
 
         public void Draw(FPCanvas canvas)
         {
-            diamondTexture.Draw(new PointF(X, Y));       
+            exitTexture.Draw(new PointF(X, Y));       
         }
 
         public FPGameObject Duplicate(float offsetX, float offsetY)
         {
-            FPDiamond duplicated = new FPDiamond();
+            FPExit duplicated = new FPExit();
             duplicated.Move(X + offsetX, Y + offsetY);
             return duplicated;
         }

@@ -81,6 +81,7 @@
     <Compile Include="GameObjectFactory.cs" />
     <Compile Include="PortedClasses\FPDiamond.cs" />
     <Compile Include="PortedClasses\FPElevator.cs" />
+    <Compile Include="PortedClasses\FPExit.cs" />
     <Compile Include="PortedClasses\FPGame.cs" />
     <Compile Include="PortedClasses\FPGameProtocols.cs" />
     <Compile Include="PortedClasses\FPGraphics.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="PortedClasses\FPPlayer.cs" />
     <Compile Include="PortedClasses\FPSpeedPowerUp.cs" />
     <Compile Include="PortedClasses\FPTextureArray.cs" />
+    <Compile Include="PortedClasses\FPTrampoline.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="DocumentForm.resx">
