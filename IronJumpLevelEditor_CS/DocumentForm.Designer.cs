@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DocumentForm));
             this.factoryView = new System.Windows.Forms.PictureBox();
             this.levelView = new GLCanvas.GLView();
             this.mainMenu = new System.Windows.Forms.MenuStrip();
@@ -50,6 +51,8 @@
             this.vScrollBarLevelView = new System.Windows.Forms.VScrollBar();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.selectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.factoryView)).BeginInit();
             this.mainMenu.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -80,6 +83,7 @@
             this.levelView.Size = new System.Drawing.Size(630, 446);
             this.levelView.TabIndex = 0;
             this.levelView.TabStop = false;
+            this.levelView.ViewOffset = ((System.Drawing.PointF)(resources.GetObject("levelView.ViewOffset")));
             this.levelView.PaintCanvas += new System.EventHandler<GLCanvas.CanvasEventArgs>(this.levelView_PaintCanvas);
             this.levelView.SizeChanged += new System.EventHandler(this.levelView_SizeChanged);
             this.levelView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.levelView_MouseDown);
@@ -159,7 +163,9 @@
             this.redoToolStripMenuItem,
             this.toolStripSeparator1,
             this.duplicateToolStripMenuItem,
-            this.deleteToolStripMenuItem});
+            this.deleteToolStripMenuItem,
+            this.toolStripSeparator4,
+            this.selectAllToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
             this.editToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.editToolStripMenuItem.Text = "Edit";
@@ -237,7 +243,7 @@
             // 
             // panel1
             // 
-            this.panel1.BackColor = System.Drawing.SystemColors.ScrollBar;
+            this.panel1.BackColor = System.Drawing.SystemColors.ControlLight;
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel1.Location = new System.Drawing.Point(0, 446);
             this.panel1.MaximumSize = new System.Drawing.Size(17, 17);
@@ -257,6 +263,19 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(17, 463);
             this.panel2.TabIndex = 5;
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(165, 6);
+            // 
+            // selectAllToolStripMenuItem
+            // 
+            this.selectAllToolStripMenuItem.Name = "selectAllToolStripMenuItem";
+            this.selectAllToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
+            this.selectAllToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.selectAllToolStripMenuItem.Text = "Select All";
+            this.selectAllToolStripMenuItem.Click += new System.EventHandler(this.selectAllToolStripMenuItem_Click);
             // 
             // DocumentForm
             // 
@@ -304,6 +323,8 @@
         private System.Windows.Forms.VScrollBar vScrollBarLevelView;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.ToolStripMenuItem selectAllToolStripMenuItem;
     }
 }
 

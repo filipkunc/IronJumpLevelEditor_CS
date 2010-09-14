@@ -30,10 +30,10 @@
     <ClInclude Include="CanvasEventArgs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Texture.h">
+    <ClInclude Include="FPMath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FPMath.h">
+    <ClInclude Include="FPTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,10 +53,10 @@
     <ClCompile Include="CanvasEventArgs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Texture.cpp">
+    <ClCompile Include="FPMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FPMath.cpp">
+    <ClCompile Include="FPTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

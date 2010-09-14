@@ -2,7 +2,7 @@
 
 namespace GLCanvas
 {
-	public ref class Texture
+	public ref class FPTexture
 	{
 	private:
 		unsigned int textureID;
@@ -12,7 +12,7 @@ namespace GLCanvas
 		property float Width { float get() { return width; } }
 		property float Height { float get() { return height; } }
 		
-		Texture(unsigned int textureID, float width, float height);
+		FPTexture(unsigned int textureID, float width, float height);
 
 		void Draw(PointF position);
 		void Draw(PointF position, float rotation);

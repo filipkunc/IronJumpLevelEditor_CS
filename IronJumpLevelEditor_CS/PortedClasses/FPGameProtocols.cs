@@ -30,7 +30,7 @@ namespace IronJumpLevelEditor_CS.PortedClasses
         bool IsMovable { get; }
 
         void Move(float offsetX, float offsetY);
-        void Draw(Canvas canvas);
+        void Draw(FPCanvas canvas);
 
         FPGameObject Duplicate(float offsetX, float offsetY);
 
@@ -38,9 +38,7 @@ namespace IronJumpLevelEditor_CS.PortedClasses
         int WidthSegments { get; set; }
         int HeightSegments { get; set; }
         FPGameObject NextPart { get; }
-        float MoveY { get; set; }
 
         void Update(FPGameProtocol game);
-        bool CollisionLeftRight(FPGameProtocol game);
     }
 }

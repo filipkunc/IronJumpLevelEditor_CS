@@ -1,7 +1,7 @@
 // This is the main DLL file.
 
 #include "stdafx.h"
-#include "Texture.h"
+#include "FPTexture.h"
 #include "GLCanvas.h"
 
 void CreateTexture(GLubyte *data, int components, GLuint *textureID, int width, int height, bool convertToAlpha)
@@ -50,49 +50,49 @@ void CreateTexture(GLubyte *data, int components, GLuint *textureID, int width, 
 
 namespace GLCanvas
 {
-	void Canvas::EnableTexturing()
+	void FPCanvas::EnableTexturing()
 	{
 		glEnable(GL_TEXTURE_2D);
 	}
 
-	void Canvas::DisableTexturing()
+	void FPCanvas::DisableTexturing()
 	{
 		glDisable(GL_TEXTURE_2D);
 	}
 
-	void Canvas::EnableBlend()
+	void FPCanvas::EnableBlend()
 	{
 		glEnable(GL_BLEND);
 	}
 
-	void Canvas::DisableBlend()
+	void FPCanvas::DisableBlend()
 	{
 		glDisable(GL_BLEND);
 	}
 
-	void Canvas::SetCurrentColor(Color color)
+	void FPCanvas::SetCurrentColor(Color color)
 	{
 		glColor4ub(color.R, color.G, color.B, color.A);
 	}
 
-	void Canvas::SetLineWidth(float width)
+	void FPCanvas::SetLineWidth(float width)
 	{
 		glLineWidth(width);
 	}
 
-	void Canvas::SetPointSize(float size)
+	void FPCanvas::SetPointSize(float size)
 	{
 		glPointSize(size);
 	}
 
-	void Canvas::DrawPoint(PointF a)
+	void FPCanvas::DrawPoint(PointF a)
 	{
 		glBegin(GL_POINTS);
 		glVertex2f(a.X, a.Y);
 		glEnd();
 	}
 
-	void Canvas::DrawLine(PointF a, PointF b)
+	void FPCanvas::DrawLine(PointF a, PointF b)
 	{
 		glBegin(GL_LINES);
 		glVertex2f(a.X, a.Y);
@@ -100,19 +100,19 @@ namespace GLCanvas
 		glEnd();
 	}
 
-	void Canvas::FillRectangle(RectangleF rect)
+	void FPCanvas::FillRectangle(RectangleF rect)
 	{
 		glRectf(rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height);
 	}
 
-	void Canvas::DrawRectangle(RectangleF rect)
+	void FPCanvas::DrawRectangle(RectangleF rect)
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);		
 		glRectf(rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
-	Texture ^Canvas::CreateTexture(Bitmap ^bitmap)
+	FPTexture ^FPCanvas::CreateTexture(Bitmap ^bitmap)
 	{
 		System::Drawing::Rectangle rect = System::Drawing::Rectangle(Point::Empty, bitmap->Size);
         BitmapData ^data = bitmap->LockBits(rect, ImageLockMode::ReadOnly, PixelFormat::Format32bppArgb);
@@ -122,6 +122,6 @@ namespace GLCanvas
 		
 		bitmap->UnlockBits(data);
 
-		return gcnew Texture(textureID, (float)rect.Width, (float)rect.Height);
+		return gcnew FPTexture(textureID, (float)rect.Width, (float)rect.Height);
 	}	
 }

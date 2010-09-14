@@ -6,9 +6,9 @@ using namespace System;
 
 namespace GLCanvas 
 {
-	ref class Texture;
+	ref class FPTexture;
 
-	public ref class Canvas
+	public ref class FPCanvas
 	{
 	public:
 		void EnableTexturing();
@@ -24,6 +24,6 @@ namespace GLCanvas
 		void FillRectangle(RectangleF rect);
 		void DrawRectangle(RectangleF rect);
 
-		Texture ^CreateTexture(Bitmap ^bitmap);		
+		FPTexture ^CreateTexture(Bitmap ^bitmap);		
 	};
 }

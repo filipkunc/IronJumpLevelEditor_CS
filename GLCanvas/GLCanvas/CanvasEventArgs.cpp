@@ -4,18 +4,8 @@
 
 namespace GLCanvas
 {
-	CanvasEventArgs::CanvasEventArgs(Canvas ^canvas)
+	CanvasEventArgs::CanvasEventArgs(FPCanvas ^canvas)
 	{
 		this->canvas = canvas;
-	}
-
-	Canvas ^CanvasEventArgs::CanvasGL::get()
-	{
-		return canvas;
-	}
-
-	void CanvasEventArgs::CanvasGL::set(Canvas ^value)
-	{
-		canvas = value;
 	}
 }

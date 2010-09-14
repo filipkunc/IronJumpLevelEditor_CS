@@ -9,7 +9,7 @@ namespace IronJumpLevelEditor_CS
 {
     public static class Extensions
     {
-        public static void Draw(this Texture texture, PointF position, int widthSegments, int heightSegments)
+        public static void Draw(this FPTexture texture, PointF position, int widthSegments, int heightSegments)
         {
             for (int y = 0; y < heightSegments; y++)
             {

@@ -11,11 +11,13 @@ namespace IronJumpLevelEditor_CS.PortedClasses
 {
     public class FPPlayer : FPGameObject
     {
-        static Texture playerTexture = null;
+        static FPTexture playerTexture = null;
+        static FPTexture jumpTexture = null;
 
-        public static void InitTextures(Canvas canvas)
+        public static void InitTextures(FPCanvas canvas)
         {
             playerTexture = canvas.CreateTexture(Resources.ball);
+            jumpTexture = canvas.CreateTexture(Resources.speed);
         }
 
         public const float tolerance = 3.0f;
@@ -30,8 +32,6 @@ namespace IronJumpLevelEditor_CS.PortedClasses
 
         bool jumping;
 
-        int speedUpCounter;
-        
         public float X { get; private set; }
         public float Y { get; private set; }
         public RectangleF Rect { get { return new RectangleF(X, Y, 32.0f, 32.0f); } }
@@ -46,6 +46,7 @@ namespace IronJumpLevelEditor_CS.PortedClasses
         public float MoveY { get; set; }
         public float Alpha { get; set; }
         public float Rotation { get; set; }
+        public int SpeedUpCounter { get; set; }
 
         public FPPlayer()
         {
@@ -72,9 +73,21 @@ namespace IronJumpLevelEditor_CS.PortedClasses
             Y += offsetY;
         }
 
-        public void Draw(Canvas canvas)
+        public void Draw(FPCanvas canvas)
         {
-            playerTexture.Draw(new PointF(X, Y), Rotation);            
+            playerTexture.Draw(new PointF(X, Y), Rotation);
+        }
+
+        public void DrawSpeedUp(FPCanvas canvas)
+        {
+            if (SpeedUpCounter <= 0)
+                return;
+
+            float value = Math.Abs(FPMath.sinf(Alpha)) * 0.5f + 0.5f;
+            canvas.SetCurrentColor(Color.FromArgb((int)(255 * value), Color.White));
+
+            PointF position = new PointF(X - 16.0f, Y - 16.0f);
+            jumpTexture.Draw(position);
         }
 
         public FPGameObject Duplicate(float offsetX, float offsetY)
@@ -83,21 +96,21 @@ namespace IronJumpLevelEditor_CS.PortedClasses
             duplicated.Move(X + offsetX, Y + offsetY);
             return duplicated;
         }
-        
+
         public void Update(FPGameProtocol game)
         {
             PointF inputAcceleration = game.InputAcceleration;
             bool moveLeftOrRight = false;
 
-            if (speedUpCounter > 0)
+            if (SpeedUpCounter > 0)
             {
-                if (++speedUpCounter > maxSpeedUpCount)
+                if (++SpeedUpCounter > maxSpeedUpCount)
                 {
-                    speedUpCounter = 0;
+                    SpeedUpCounter = 0;
                 }
             }
 
-            float currentMaxSpeed = speedUpCounter > 0 ? maxSpeed * speedPowerUp : maxSpeed;
+            float currentMaxSpeed = SpeedUpCounter > 0 ? maxSpeed * speedPowerUp : maxSpeed;
 
             if (inputAcceleration.X < 0.0f)
             {
@@ -170,8 +183,9 @@ namespace IronJumpLevelEditor_CS.PortedClasses
                     {
                         if (platform.IsMovable)
                         {
+                            var movable = (FPMovablePlatform)platform;
                             platform.Move(intersection.Width, 0.0f);
-                            if (platform.CollisionLeftRight(game))
+                            if (movable.CollisionLeftRight(game))
                             {
                                 platform.Move(-intersection.Width, 0.0f);
                                 game.MoveWorld(intersection.Width, 0.0f);
@@ -188,8 +202,9 @@ namespace IronJumpLevelEditor_CS.PortedClasses
                     {
                         if (platform.IsMovable)
                         {
+                            var movable = (FPMovablePlatform)platform;
                             platform.Move(-intersection.Width, 0.0f);
-                            if (platform.CollisionLeftRight(game))
+                            if (movable.CollisionLeftRight(game))
                             {
                                 platform.Move(intersection.Width, 0.0f);
                                 game.MoveWorld(-intersection.Width, 0.0f);

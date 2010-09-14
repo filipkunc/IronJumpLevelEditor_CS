@@ -10,9 +10,9 @@ namespace IronJumpLevelEditor_CS.PortedClasses
 {
     public class FPGame : FPGameProtocol
     {
-        static Texture backgroundTexture = null;
+        static FPTexture backgroundTexture = null;
 
-        public static void InitTexture(Canvas canvas)
+        public static void InitTexture(FPCanvas canvas)
         {
             backgroundTexture = canvas.CreateTexture(Resources.marbleblue);
         }
@@ -29,6 +29,9 @@ namespace IronJumpLevelEditor_CS.PortedClasses
 
         public float Width { get; private set; }
         public float Height { get; private set; }
+
+        public int DiamondsPicked { get { return diamondsPicked; } }
+        public int DiamondsCount { get { return diamondsCount; } }
 
         public FPGameObject Player
         {
@@ -54,6 +57,30 @@ namespace IronJumpLevelEditor_CS.PortedClasses
             diamondsCount = 0;
         }
 
+        public FPGame(float width, float height, IEnumerable<FPGameObject> levelObjects)
+            : this(width, height)
+        {
+            PointF playerPosition = PointF.Empty;
+
+            foreach (var gameObject in levelObjects)
+            {
+                if (gameObject is FPPlayer)
+                {
+                    playerPosition.X = gameObject.X;
+                    playerPosition.Y = gameObject.Y;
+                }
+                else if (!(gameObject is FPElevatorEnd))
+                {
+                    if (gameObject is FPDiamond)
+                        diamondsCount++;
+
+                    gameObjects.Add(gameObject.Duplicate(0.0f, 0.0f));
+                }
+            }
+
+            MoveWorld(player.X - playerPosition.X, player.Y - playerPosition.Y);
+        }
+
         public void Update()
         {
             diamondsPicked = 0;
@@ -62,8 +89,8 @@ namespace IronJumpLevelEditor_CS.PortedClasses
             {
                 if (!gameObject.IsVisible)
                 {
-                    //if (gameObject is FPDiamond)
-                    //    diamondsPicked++;
+                    if (gameObject is FPDiamond)
+                        diamondsPicked++;
                 }
 
                 if (!gameObject.IsMovable)
@@ -79,12 +106,13 @@ namespace IronJumpLevelEditor_CS.PortedClasses
             player.Update(this);
         }
 
-        public void Draw(Canvas canvas)
+        public void Draw(FPCanvas canvas)
         {
+            canvas.SetCurrentColor(Color.White);
             canvas.DisableBlend();
 
             PointF offset = new PointF(FPMath.fmodf(backgroundOffset.X, 32.0f) - 32.0f,
-				                       FPMath.fmodf(backgroundOffset.Y, 32.0f) - 32.0f);
+                                       FPMath.fmodf(backgroundOffset.Y, 32.0f) - 32.0f);
 
             backgroundTexture.Draw(offset, (int)(Width / backgroundTexture.Width) + 3, (int)(Height / backgroundTexture.Height) + 2);
 
@@ -107,6 +135,7 @@ namespace IronJumpLevelEditor_CS.PortedClasses
                     gameObject.Draw(canvas);
             }
             player.Draw(canvas);
+            player.DrawSpeedUp(canvas);
         }
 
         public void MoveWorld(float x, float y)

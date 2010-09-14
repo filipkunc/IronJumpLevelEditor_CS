@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include "Texture.h"
+#include "FPTexture.h"
 
 typedef struct
 {
@@ -9,14 +9,14 @@ typedef struct
 
 namespace GLCanvas
 {
-	Texture::Texture(unsigned int textureID, float width, float height)
+	FPTexture::FPTexture(unsigned int textureID, float width, float height)
 	{
 		this->textureID = textureID;
 		this->width = width;
 		this->height = height;
 	}
 
-	void Texture::Draw(PointF position)
+	void FPTexture::Draw(PointF position)
 	{
 		const float x = position.X;
 		const float y = position.Y;
@@ -38,7 +38,7 @@ namespace GLCanvas
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	}
 
-	void Texture::Draw(PointF position, float rotation)
+	void FPTexture::Draw(PointF position, float rotation)
 	{
 		glPushMatrix();
 		glTranslatef(position.X, position.Y, 0.0f);	

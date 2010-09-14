@@ -163,7 +163,7 @@ namespace GLCanvas
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		CanvasEventArgs ^args = gcnew CanvasEventArgs(gcnew Canvas());
+		CanvasEventArgs ^args = gcnew CanvasEventArgs(gcnew FPCanvas());
 		PaintCanvas(this, args);		
 	}
 }

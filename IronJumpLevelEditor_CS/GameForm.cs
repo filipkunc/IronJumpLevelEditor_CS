@@ -22,25 +22,8 @@ namespace IronJumpLevelEditor_CS
             InitializeComponent();
             gameView.SharedContextView = sharedContextView;
 
-            game = new FPGame(gameView.Width, gameView.Height);
             pressedKeys = new HashSet<int>();
-
-            PointF playerPosition = PointF.Empty;
-
-            foreach (var gameObject in gameObjects)
-            {
-                if (gameObject is FPPlayer)
-                {
-                    playerPosition.X = gameObject.X;
-                    playerPosition.Y = gameObject.Y;
-                }
-                else
-                {
-                    game.GameObjects.Add(gameObject.Duplicate(0.0f, 0.0f));
-                }
-            }
-
-            game.MoveWorld(game.Player.X - playerPosition.X, game.Player.Y - playerPosition.Y);
+            game = new FPGame(gameView.Width, gameView.Height, gameObjects);
         }
 
         protected override void OnShown(EventArgs e)
@@ -63,13 +46,15 @@ namespace IronJumpLevelEditor_CS
 
             game.InputAcceleration = inputAcceleration;
             game.Update();
-            gameView.Invalidate();            
+            gameView.Invalidate();
+
+            this.Text = string.Format("Game Simulation, Diamonds: {0}/{1}", game.DiamondsPicked, game.DiamondsCount);
         }
 
         private void gameView_PaintCanvas(object sender, CanvasEventArgs e)
         {
-            Canvas canvas = e.CanvasGL;
-            game.Draw(canvas);            
+            FPCanvas canvas = e.Canvas;
+            game.Draw(canvas);
         }
 
         private void gameView_KeyUp(object sender, KeyEventArgs e)
@@ -79,7 +64,7 @@ namespace IronJumpLevelEditor_CS
 
         private void gameView_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
-            pressedKeys.Add(e.KeyValue);         
+            pressedKeys.Add(e.KeyValue);
         }
     }
 }

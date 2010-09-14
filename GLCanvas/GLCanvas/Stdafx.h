@@ -4,7 +4,11 @@
 
 #pragma once
 
+#define NOMINMAX
+
 #include <Windows.h>
+#include <algorithm>
+#include <stdlib.h>
 #include <math.h>
 #include <gl/GL.h>
 #include <gl/GLU.h>

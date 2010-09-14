@@ -40,17 +40,17 @@ namespace IronJumpLevelEditor_CS
         {
             new GameObjectFactory (Resources.ball, () => new FPPlayer()),
             new GameObjectFactory (Resources.plos_marble, () => new FPPlatform()),
-            new GameObjectFactory (Resources.movable, () => null),
-            new GameObjectFactory (Resources.vytah01, () => null),
-            new GameObjectFactory (Resources.diamond, () => null),
-            new GameObjectFactory (Resources.magnet, () => null),
-            new GameObjectFactory (Resources.speed_symbol, () => null),
+            new GameObjectFactory (Resources.movable, () => new FPMovablePlatform()),
+            new GameObjectFactory (Resources.vytah01, () => new FPElevator()),
+            new GameObjectFactory (Resources.diamond, () => new FPDiamond()),
+            new GameObjectFactory (Resources.magnet, () => new FPMagnet()),
+            new GameObjectFactory (Resources.speed_symbol, () => new FPSpeedPowerUp()),
             new GameObjectFactory (Resources.trampoline01, () => null),
             new GameObjectFactory (Resources.exit, () => null),            
         };
 
         List<FPGameObject> gameObjects = new List<FPGameObject>();
-        HashSet<int> selectedIndices = new HashSet<int>();
+        SortedSet<int> selectedIndices = new SortedSet<int>();
 
         PointF beginMovePoint;
         PointF endMovePoint;
@@ -72,17 +72,22 @@ namespace IronJumpLevelEditor_CS
             levelView_SizeChanged(this, EventArgs.Empty);
         }
 
-        private void InitAllTextures(Canvas canvas)
+        private void InitAllTextures(FPCanvas canvas)
         {
             FPGame.InitTexture(canvas);
             FPPlayer.InitTextures(canvas);
             FPPlatform.InitTextures(canvas);
+            FPDiamond.InitTextures(canvas);
+            FPElevator.InitTextures(canvas);
+            FPMovablePlatform.InitTextures(canvas);
+            FPMagnet.InitTextures(canvas);
+            FPSpeedPowerUp.InitTextures(canvas);
         }
 
-        void DrawGrid(Canvas canvas)
+        void DrawGrid(FPCanvas canvas)
         {
-            Rectangle rect = levelView.ClientRectangle;            
-                        
+            Rectangle rect = levelView.ClientRectangle;
+
             rect.Offset(-(int)levelView.ViewOffset.X, -(int)levelView.ViewOffset.Y);
 
             rect.X /= 32;
@@ -137,7 +142,7 @@ namespace IronJumpLevelEditor_CS
 
         private void levelView_PaintCanvas(object sender, CanvasEventArgs e)
         {
-            Canvas canvas = e.CanvasGL;
+            FPCanvas canvas = e.Canvas;
 
             if (!texturesLoaded)
             {
@@ -521,7 +526,7 @@ namespace IronJumpLevelEditor_CS
 
         #region Helpers
 
-        private void DrawHandlesOnGameObject(Canvas canvas, FPGameObject gameObject)
+        private void DrawHandlesOnGameObject(FPCanvas canvas, FPGameObject gameObject)
         {
             RectangleF rect = gameObject.Rect;
 
@@ -805,7 +810,36 @@ namespace IronJumpLevelEditor_CS
 
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            List<FPGameObject> nextParts = new List<FPGameObject>();
+            foreach (var index in selectedIndices)
+            {
+                var gameObject = gameObjects[index];
+                if (gameObject.NextPart != null)
+                {
+                    nextParts.Add(gameObject.NextPart);
+                }
+                if (nextParts.Contains(gameObject))
+                    nextParts.Remove(gameObject);
+            }
 
+            int diff = 0;
+            foreach (var index in selectedIndices)
+            {
+                gameObjects.RemoveAt(index - diff);
+                diff++;
+            }
+
+            gameObjects.RemoveAll(x => nextParts.Contains(x));
+            selectedIndices.Clear();
+            levelView.Invalidate();
+        }
+
+        private void selectAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            selectedIndices.Clear();
+            for (int i = 0; i < gameObjects.Count; i++)
+                selectedIndices.Add(i);
+            levelView.Invalidate();
         }
 
         private void runToolStripMenuItem_Click(object sender, EventArgs e)
@@ -824,7 +858,7 @@ namespace IronJumpLevelEditor_CS
         {
             Size size = levelView.ClientSize;
             hScrollBarLevelView.Maximum = Math.Max(8000 - size.Width, 0);
-            vScrollBarLevelView.Maximum = Math.Max(8000 - size.Height, 0);            
+            vScrollBarLevelView.Maximum = Math.Max(8000 - size.Height, 0);
         }
 
         private void hScrollBarLevelView_ValueChanged(object sender, EventArgs e)

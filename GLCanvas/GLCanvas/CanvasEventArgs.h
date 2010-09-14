@@ -5,14 +5,14 @@ namespace GLCanvas
 	public ref class CanvasEventArgs : public EventArgs
 	{
 	private:
-		Canvas ^canvas;
+		FPCanvas ^canvas;
 	public:
-		CanvasEventArgs(Canvas ^canvas);
+		CanvasEventArgs(FPCanvas ^canvas);
 
-		property Canvas ^CanvasGL
+		property FPCanvas ^Canvas
 		{ 
-			Canvas ^get(); 
-			void set(Canvas ^value); 
+			FPCanvas ^get() { return canvas; }
+			void set(FPCanvas ^value) { canvas = value; }
 		}
 	};
 }
