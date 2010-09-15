@@ -49,9 +49,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="GLCanvas, Version=1.0.3907.36272, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="GLCanvas, Version=1.0.3909.20297, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\GLCanvas\Debug\GLCanvas.dll</HintPath>
+      <HintPath>..\GLCanvas\Release\GLCanvas.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -79,6 +79,7 @@
       <DependentUpon>GameForm.cs</DependentUpon>
     </Compile>
     <Compile Include="GameObjectFactory.cs" />
+    <Compile Include="Invocation.cs" />
     <Compile Include="PortedClasses\FPDiamond.cs" />
     <Compile Include="PortedClasses\FPElevator.cs" />
     <Compile Include="PortedClasses\FPExit.cs" />
@@ -94,6 +95,8 @@
     <Compile Include="PortedClasses\FPTrampoline.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UndoableAction.cs" />
+    <Compile Include="UndoManager.cs" />
     <EmbeddedResource Include="DocumentForm.resx">
       <DependentUpon>DocumentForm.cs</DependentUpon>
     </EmbeddedResource>

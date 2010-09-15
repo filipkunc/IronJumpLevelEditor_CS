@@ -34,6 +34,8 @@ namespace IronJumpLevelEditor_CS
 
     public partial class DocumentForm : Form
     {
+        UndoManager undoManager = new UndoManager();
+
         bool texturesLoaded = false;
 
         GameObjectFactory selectedFactory = null;
@@ -65,6 +67,18 @@ namespace IronJumpLevelEditor_CS
         RectangleF SelectionRect
         {
             get { return beginSelection.RectangleFromPoints(endSelection); }
+        }
+
+        GameObjectFactory SelectedFactory
+        {
+            get { return selectedFactory; }
+            set
+            {
+                if (previousObjects != null)
+                    AfterAction("Add New Object");
+                selectedFactory = value;
+                factoryView.Invalidate();
+            }
         }
 
         public DocumentForm()
@@ -109,10 +123,92 @@ namespace IronJumpLevelEditor_CS
                 canvas.DrawLine(new Point(x, rect.Top), new Point(x, rect.Bottom + 32));
         }
 
+        #region Undo & Redo
+
+        private void SwapOldWithNew(List<FPGameObject> oldObjects, SortedSet<int> oldIndices,
+            List<FPGameObject> newObjects, SortedSet<int> newIndices, string name)
+        {
+            gameObjects.Clear();
+            gameObjects.AddRange(oldObjects);
+            selectedIndices.Clear();
+            foreach (var index in oldIndices)
+                selectedIndices.Add(index);
+
+            undoManager.PrepareUndo(name, Invocation.Create(this,
+                form => form.SwapOldWithNew(newObjects, newIndices, oldObjects, oldIndices, name)));
+
+            levelView.Invalidate();
+        }
+
+        private void DuplicateCurrentObjectsAndIndices(List<FPGameObject> currentObjects, SortedSet<int> currentIndices)
+        {
+            currentObjects.Clear();
+
+            foreach (var gameObject in gameObjects)
+            {
+                var duplicate = gameObject.Duplicate(0.0f, 0.0f);
+                if (duplicate != null)
+                {
+                    currentObjects.Add(duplicate);
+                }
+                else // elevator end
+                {
+                    var parentInGameObjects = gameObject.NextPart;
+                    var parentInOldObjects = currentObjects[gameObjects.IndexOf(parentInGameObjects)];
+                    var nextPart = parentInOldObjects.NextPart;
+                    currentObjects.Add(nextPart);
+                }
+            }
+
+            currentIndices.Clear();
+            foreach (var index in selectedIndices)
+                currentIndices.Add(index);
+        }
+
+        private List<FPGameObject> previousObjects = null;
+        private SortedSet<int> previousIndices = null;
+
+        private void BeforeAction()
+        {
+            if (previousObjects != null || previousIndices != null)
+                throw new ApplicationException("BeforeAction called twice");
+
+            previousObjects = new List<FPGameObject>();
+            previousIndices = new SortedSet<int>();
+
+            DuplicateCurrentObjectsAndIndices(previousObjects, previousIndices);
+        }
+
+        private void FullAction(string name, Action<DocumentForm> action)
+        {
+            BeforeAction();
+            action(this);
+            AfterAction(name);
+        }
+
+        private void AfterAction(string name)
+        {
+            undoManager.PrepareUndo(name, Invocation.Create(previousObjects, previousIndices,
+                (oldObjects, oldIndices) =>
+                {
+                    List<FPGameObject> currentObjects = new List<FPGameObject>();
+                    SortedSet<int> currentIndices = new SortedSet<int>();
+                    DuplicateCurrentObjectsAndIndices(currentObjects, currentIndices);
+
+                    SwapOldWithNew(oldObjects, oldIndices, currentObjects, currentIndices, name);                    
+                }));
+
+            previousObjects = null;
+            previousIndices = null;
+        }
+
+        #endregion
+
         #region DataSource
 
         private void AddNewGameObject(FPGameObject gameObject)
         {
+            BeforeAction();
             gameObjects.Add(gameObject);
             selectedIndices.Clear();
             selectedIndices.Add(gameObjects.Count - 1);
@@ -122,22 +218,22 @@ namespace IronJumpLevelEditor_CS
 
         private void BeginResize(FPDragHandle handle)
         {
-
+            BeforeAction();
         }
 
         void EndResize(PointF move)
         {
-
+            AfterAction("Resize Selected");
         }
 
         private void BeginMove()
         {
-
+            BeforeAction();
         }
 
         void EndMove(PointF move)
         {
-
+            AfterAction("Move Selected");
         }
 
         #endregion
@@ -215,9 +311,9 @@ namespace IronJumpLevelEditor_CS
                 return;
             }
 
-            if (selectedFactory != null)
+            if (SelectedFactory != null)
             {
-                var draggedObject = selectedFactory.FactoryAction();
+                var draggedObject = SelectedFactory.FactoryAction();
                 draggedObject.Move(x, y);
                 AddNewGameObject(draggedObject);
             }
@@ -391,7 +487,7 @@ namespace IronJumpLevelEditor_CS
                         break;
                 }
             }
-            else if (selectedFactory != null)
+            else if (SelectedFactory != null)
             {
                 int widthSegments = (int)((location.X - endMovePoint.X + 16.0f) / 32.0f);
                 int heightSegments = (int)((location.Y - endMovePoint.Y + 16.0f) / 32.0f);
@@ -472,9 +568,8 @@ namespace IronJumpLevelEditor_CS
                     EndResize(move);
             }
 
-            selectedFactory = null;
-            levelView.Invalidate();
-            factoryView.Invalidate();
+            SelectedFactory = null;
+            levelView.Invalidate();            
         }
 
         #endregion
@@ -495,7 +590,7 @@ namespace IronJumpLevelEditor_CS
             {
                 rc.Size = factory.Image.Size;
                 g.DrawImage(factory.Image, rc);
-                if (selectedFactory == factory)
+                if (SelectedFactory == factory)
                 {
                     g.DrawRectangle(new Pen(Color.White, 2.0f), rc);
                 }
@@ -510,20 +605,18 @@ namespace IronJumpLevelEditor_CS
 
         private void factoryView_MouseClick(object sender, MouseEventArgs e)
         {
-            selectedFactory = null;
+            SelectedFactory = null;
             Rectangle rc = new Rectangle(8, 5, 32, 32);
             foreach (var factory in factories)
             {
                 rc.Size = factory.Image.Size;
                 if (rc.Contains(e.Location))
                 {
-                    selectedFactory = factory;
-                    factoryView.Invalidate();
+                    SelectedFactory = factory;
                     return;
                 }
                 rc.Y += factory.Image.Height + 5;
-            }
-            factoryView.Invalidate();
+            }            
         }
 
         #endregion
@@ -750,18 +843,23 @@ namespace IronJumpLevelEditor_CS
 
         private void newLevelToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            previousObjects = null;
+            previousIndices = null;
+            undoManager = new UndoManager();
             gameObjects.Clear();
-            selectedFactory = null;
-            levelView.Invalidate();
-            factoryView.Invalidate();
+            SelectedFactory = null;
+            levelView.Invalidate();            
         }
 
         private void openLevelToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
+                previousObjects = null;
+                previousIndices = null;
+                undoManager = new UndoManager();
                 gameObjects.Clear();
-                selectedIndices.Clear();
+                SelectedFactory = null;
 
                 XElement root = XElement.Load(openFileDialog.FileName);
                 foreach (var element in root.Elements())
@@ -803,69 +901,77 @@ namespace IronJumpLevelEditor_CS
 
         private void undoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            undoManager.Undo();
         }
 
         private void redoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            undoManager.Redo();
         }
 
         private void duplicateToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            List<FPGameObject> duplicates = new List<FPGameObject>();
-            List<FPGameObject> nextParts = new List<FPGameObject>();
-
-            foreach (var index in selectedIndices)
-            {
-                var gameObject = gameObjects[index];
-                var duplicate = gameObject.Duplicate(32.0f, 32.0f);
-                if (duplicate != null)
+            FullAction("Duplicate Selected",
+                form =>
                 {
-                    duplicates.Add(duplicate);
-                    if (duplicate.NextPart != null)
+                    List<FPGameObject> duplicates = new List<FPGameObject>();
+                    List<FPGameObject> nextParts = new List<FPGameObject>();
+
+                    foreach (var index in selectedIndices)
                     {
-                        nextParts.Add(duplicate.NextPart);
+                        var gameObject = gameObjects[index];
+                        var duplicate = gameObject.Duplicate(32.0f, 32.0f);
+                        if (duplicate != null)
+                        {
+                            duplicates.Add(duplicate);
+                            if (duplicate.NextPart != null)
+                            {
+                                nextParts.Add(duplicate.NextPart);
+                            }
+                        }
                     }
-                }
-            }
 
-            selectedIndices.Clear();
-            gameObjects.AddRange(duplicates);
-            for (int i = gameObjects.Count - duplicates.Count; i < gameObjects.Count; i++)
-                selectedIndices.Add(i);
+                    selectedIndices.Clear();
+                    gameObjects.AddRange(duplicates);
+                    for (int i = gameObjects.Count - duplicates.Count; i < gameObjects.Count; i++)
+                        selectedIndices.Add(i);
 
-            gameObjects.AddRange(nextParts);
-            for (int i = gameObjects.Count - nextParts.Count; i < gameObjects.Count; i++)
-                selectedIndices.Add(i);
+                    gameObjects.AddRange(nextParts);
+                    for (int i = gameObjects.Count - nextParts.Count; i < gameObjects.Count; i++)
+                        selectedIndices.Add(i);
 
-            levelView.Invalidate();
+                    levelView.Invalidate();
+                });
         }
 
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            List<FPGameObject> nextParts = new List<FPGameObject>();
-            foreach (var index in selectedIndices)
-            {
-                var gameObject = gameObjects[index];
-                if (gameObject.NextPart != null)
+            FullAction("Delete Selected",
+                form =>
                 {
-                    nextParts.Add(gameObject.NextPart);
-                }
-                if (nextParts.Contains(gameObject))
-                    nextParts.Remove(gameObject);
-            }
+                    List<FPGameObject> nextParts = new List<FPGameObject>();
+                    foreach (var index in selectedIndices)
+                    {
+                        var gameObject = gameObjects[index];
+                        if (gameObject.NextPart != null)
+                        {
+                            nextParts.Add(gameObject.NextPart);
+                        }
+                        if (nextParts.Contains(gameObject))
+                            nextParts.Remove(gameObject);
+                    }
 
-            int diff = 0;
-            foreach (var index in selectedIndices)
-            {
-                gameObjects.RemoveAt(index - diff);
-                diff++;
-            }
+                    int diff = 0;
+                    foreach (var index in selectedIndices)
+                    {
+                        gameObjects.RemoveAt(index - diff);
+                        diff++;
+                    }
 
-            gameObjects.RemoveAll(x => nextParts.Contains(x));
-            selectedIndices.Clear();
-            levelView.Invalidate();
+                    gameObjects.RemoveAll(x => nextParts.Contains(x));
+                    selectedIndices.Clear();
+                    levelView.Invalidate();
+                });
         }
 
         private void selectAllToolStripMenuItem_Click(object sender, EventArgs e)
@@ -907,6 +1013,6 @@ namespace IronJumpLevelEditor_CS
             levelView.Invalidate();
         }
 
-        #endregion        
+        #endregion
     }
 }
