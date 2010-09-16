@@ -41,5 +41,11 @@ namespace IronJumpLevelEditor_CS
         {
             element.Add(new XElement(child, value.ToString(CultureInfo.InvariantCulture)));
         }
+
+        public static void AddRange<T>(this SortedSet<T> set, IEnumerable<T> objects)
+        {
+            foreach (var item in objects)
+                set.Add(item);
+        }
     }
 }

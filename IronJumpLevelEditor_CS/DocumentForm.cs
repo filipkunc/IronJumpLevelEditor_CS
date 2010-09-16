@@ -137,17 +137,20 @@ namespace IronJumpLevelEditor_CS
 
         #region Undo & Redo
 
-        private void SwapOldWithNew(List<FPGameObject> oldObjects, SortedSet<int> oldIndices,
-            List<FPGameObject> newObjects, SortedSet<int> newIndices, string name)
+        private void RevertAction(string name, List<FPGameObject> objects, SortedSet<int> indices)
         {
-            gameObjects.Clear();
-            gameObjects.AddRange(oldObjects);
-            selectedIndices.Clear();
-            foreach (var index in oldIndices)
-                selectedIndices.Add(index);
+            List<FPGameObject> copiedObjects = new List<FPGameObject>();
+            SortedSet<int> copiedIndices = new SortedSet<int>();
 
-            undoManager.PrepareUndo(name, Invocation.Create(this,
-                form => form.SwapOldWithNew(newObjects, newIndices, oldObjects, oldIndices, name)));
+            DuplicateCurrentObjectsAndIndices(copiedObjects, copiedIndices);
+
+            gameObjects.Clear();
+            gameObjects.AddRange(objects);
+            selectedIndices.Clear();
+            selectedIndices.AddRange(indices);
+
+            undoManager.PrepareUndo(name, Invocation.Create(name, copiedObjects, copiedIndices,
+                (a, b, c) => RevertAction(a, b, c)));
 
             levelView.Invalidate();
         }
@@ -173,8 +176,7 @@ namespace IronJumpLevelEditor_CS
             }
 
             currentIndices.Clear();
-            foreach (var index in selectedIndices)
-                currentIndices.Add(index);
+            currentIndices.AddRange(selectedIndices);
         }
 
         private List<FPGameObject> previousObjects = null;
@@ -200,15 +202,8 @@ namespace IronJumpLevelEditor_CS
 
         private void AfterAction(string name)
         {
-            undoManager.PrepareUndo(name, Invocation.Create(previousObjects, previousIndices,
-                (oldObjects, oldIndices) =>
-                {
-                    List<FPGameObject> currentObjects = new List<FPGameObject>();
-                    SortedSet<int> currentIndices = new SortedSet<int>();
-                    DuplicateCurrentObjectsAndIndices(currentObjects, currentIndices);
-
-                    SwapOldWithNew(oldObjects, oldIndices, currentObjects, currentIndices, name);                    
-                }));
+            undoManager.PrepareUndo(name, Invocation.Create(name, previousObjects, previousIndices,
+                (a, b, c) => RevertAction(a, b, c)));
 
             previousObjects = null;
             previousIndices = null;
@@ -581,7 +576,7 @@ namespace IronJumpLevelEditor_CS
             }
 
             SelectedFactory = null;
-            levelView.Invalidate();            
+            levelView.Invalidate();
         }
 
         #endregion
@@ -628,7 +623,7 @@ namespace IronJumpLevelEditor_CS
                     return;
                 }
                 rc.Y += factory.Image.Height + 5;
-            }            
+            }
         }
 
         #endregion
@@ -863,7 +858,7 @@ namespace IronJumpLevelEditor_CS
             previousIndices = null;
             gameObjects.Clear();
             SelectedFactory = null;
-            levelView.Invalidate();            
+            levelView.Invalidate();
         }
 
         private void openLevelToolStripMenuItem_Click(object sender, EventArgs e)
@@ -893,7 +888,7 @@ namespace IronJumpLevelEditor_CS
                 levelView.Invalidate();
 
                 lastFileName = openFileDialog.FileName;
-                undoManager_NeedsSaveChanged(this, EventArgs.Empty);                
+                undoManager_NeedsSaveChanged(this, EventArgs.Empty);
             }
         }
 
@@ -1057,7 +1052,7 @@ namespace IronJumpLevelEditor_CS
             levelView.Invalidate();
         }
 
-        #endregion        
+        #endregion
 
         private bool SaveChangesQuestion()
         {
