@@ -37,6 +37,7 @@
             this.openLevelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.saveLevelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveLevelAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -49,6 +50,8 @@
             this.selectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutIronJumpLevelEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hScrollBarLevelView = new System.Windows.Forms.HScrollBar();
             this.vScrollBarLevelView = new System.Windows.Forms.VScrollBar();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -97,7 +100,8 @@
             this.mainMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.editToolStripMenuItem,
-            this.gameToolStripMenuItem});
+            this.gameToolStripMenuItem,
+            this.helpToolStripMenuItem});
             this.mainMenu.Location = new System.Drawing.Point(0, 0);
             this.mainMenu.Name = "mainMenu";
             this.mainMenu.Size = new System.Drawing.Size(727, 24);
@@ -111,6 +115,7 @@
             this.openLevelToolStripMenuItem,
             this.toolStripSeparator3,
             this.saveLevelToolStripMenuItem,
+            this.saveLevelAsToolStripMenuItem,
             this.toolStripSeparator2,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -121,40 +126,48 @@
             // 
             this.newLevelToolStripMenuItem.Name = "newLevelToolStripMenuItem";
             this.newLevelToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.newLevelToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
-            this.newLevelToolStripMenuItem.Text = "New level";
+            this.newLevelToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.newLevelToolStripMenuItem.Text = "New Level";
             this.newLevelToolStripMenuItem.Click += new System.EventHandler(this.newLevelToolStripMenuItem_Click);
             // 
             // openLevelToolStripMenuItem
             // 
             this.openLevelToolStripMenuItem.Name = "openLevelToolStripMenuItem";
             this.openLevelToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.openLevelToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
-            this.openLevelToolStripMenuItem.Text = "Open level...";
+            this.openLevelToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.openLevelToolStripMenuItem.Text = "Open Level...";
             this.openLevelToolStripMenuItem.Click += new System.EventHandler(this.openLevelToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(185, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(188, 6);
             // 
             // saveLevelToolStripMenuItem
             // 
             this.saveLevelToolStripMenuItem.Name = "saveLevelToolStripMenuItem";
             this.saveLevelToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.saveLevelToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
-            this.saveLevelToolStripMenuItem.Text = "Save level";
+            this.saveLevelToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.saveLevelToolStripMenuItem.Text = "Save Level";
             this.saveLevelToolStripMenuItem.Click += new System.EventHandler(this.saveLevelToolStripMenuItem_Click);
+            // 
+            // saveLevelAsToolStripMenuItem
+            // 
+            this.saveLevelAsToolStripMenuItem.Name = "saveLevelAsToolStripMenuItem";
+            this.saveLevelAsToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.saveLevelAsToolStripMenuItem.Text = "Save Level As...";
+            this.saveLevelAsToolStripMenuItem.Click += new System.EventHandler(this.saveLevelAsToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(185, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(188, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
+            this.exitToolStripMenuItem.ShortcutKeyDisplayString = "Alt+F4";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -171,6 +184,7 @@
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
             this.editToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.editToolStripMenuItem.Text = "Edit";
+            this.editToolStripMenuItem.DropDownOpening += new System.EventHandler(this.editToolStripMenuItem_DropDownOpening);
             // 
             // undoToolStripMenuItem
             // 
@@ -238,6 +252,21 @@
             this.runToolStripMenuItem.Text = "Run";
             this.runToolStripMenuItem.Click += new System.EventHandler(this.runToolStripMenuItem_Click);
             // 
+            // helpToolStripMenuItem
+            // 
+            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.aboutIronJumpLevelEditorToolStripMenuItem});
+            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(40, 20);
+            this.helpToolStripMenuItem.Text = "Help";
+            // 
+            // aboutIronJumpLevelEditorToolStripMenuItem
+            // 
+            this.aboutIronJumpLevelEditorToolStripMenuItem.Name = "aboutIronJumpLevelEditorToolStripMenuItem";
+            this.aboutIronJumpLevelEditorToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
+            this.aboutIronJumpLevelEditorToolStripMenuItem.Text = "About";
+            this.aboutIronJumpLevelEditorToolStripMenuItem.Click += new System.EventHandler(this.aboutIronJumpLevelEditorToolStripMenuItem_Click);
+            // 
             // hScrollBarLevelView
             // 
             this.hScrollBarLevelView.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -302,6 +331,7 @@
             this.MainMenuStrip = this.mainMenu;
             this.Name = "DocumentForm";
             this.Text = "IronJump Level Editor";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DocumentForm_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.factoryView)).EndInit();
             this.mainMenu.ResumeLayout(false);
             this.mainMenu.PerformLayout();
@@ -339,6 +369,9 @@
         private System.Windows.Forms.ToolStripMenuItem selectAllToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
+        private System.Windows.Forms.ToolStripMenuItem saveLevelAsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem aboutIronJumpLevelEditorToolStripMenuItem;
     }
 }
 

@@ -26,7 +26,7 @@ namespace IronJumpLevelEditor_CS
         {
             get
             {
-                if (CanUndo && lastUndoStackCount != undoStack.Count)
+                if (lastUndoStackCount != undoStack.Count)
                     return true;
                 return false;
             }

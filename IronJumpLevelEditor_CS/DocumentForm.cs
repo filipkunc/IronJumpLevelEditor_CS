@@ -34,6 +34,8 @@ namespace IronJumpLevelEditor_CS
 
     public partial class DocumentForm : Form
     {
+        string lastFileName = string.Empty;
+
         UndoManager undoManager = new UndoManager();
 
         bool texturesLoaded = false;
@@ -86,6 +88,16 @@ namespace IronJumpLevelEditor_CS
             InitializeComponent();
             factoryView.BackColor = Color.FromArgb(55, 60, 89);
             levelView_SizeChanged(this, EventArgs.Empty);
+            undoManager.NeedsSaveChanged += new EventHandler(undoManager_NeedsSaveChanged);
+            undoManager_NeedsSaveChanged(this, EventArgs.Empty);
+        }
+
+        void undoManager_NeedsSaveChanged(object sender, EventArgs e)
+        {
+            string fileName = lastFileName;
+            if (string.IsNullOrEmpty(lastFileName))
+                fileName = "Untitled";
+            this.Text = string.Format("{0} - {1}{2}", Application.ProductName, fileName, undoManager.NeedsSave ? "*" : "");
         }
 
         private void InitAllTextures(FPCanvas canvas)
@@ -843,9 +855,12 @@ namespace IronJumpLevelEditor_CS
 
         private void newLevelToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (!SaveChangesQuestion())
+                return;
+
+            undoManager.Clear();
             previousObjects = null;
             previousIndices = null;
-            undoManager = new UndoManager();
             gameObjects.Clear();
             SelectedFactory = null;
             levelView.Invalidate();            
@@ -853,11 +868,14 @@ namespace IronJumpLevelEditor_CS
 
         private void openLevelToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (!SaveChangesQuestion())
+                return;
+
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
+                undoManager.Clear();
                 previousObjects = null;
                 previousIndices = null;
-                undoManager = new UndoManager();
                 gameObjects.Clear();
                 SelectedFactory = null;
 
@@ -873,30 +891,48 @@ namespace IronJumpLevelEditor_CS
                 }
 
                 levelView.Invalidate();
+
+                lastFileName = openFileDialog.FileName;
+                undoManager_NeedsSaveChanged(this, EventArgs.Empty);                
+            }
+        }
+
+        private void SaveToFile(string fileName)
+        {
+            XElement root = new XElement("IronJumpLevel");
+            foreach (var gameObject in gameObjects)
+            {
+                if (gameObject is FPElevatorEnd)
+                    continue;
+
+                XElement gameObjectElement = new XElement(gameObject.GetType().Name);
+                gameObject.WriteToElement(gameObjectElement);
+                root.Add(gameObjectElement);
+            }
+            root.Save(fileName);
+            undoManager.DocumentSaved();
+        }
+
+        private void saveLevelAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                SaveToFile(saveFileDialog.FileName);
+                lastFileName = saveFileDialog.FileName;
             }
         }
 
         private void saveLevelToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                XElement root = new XElement("IronJumpLevel");
-                foreach (var gameObject in gameObjects)
-                {
-                    if (gameObject is FPElevatorEnd)
-                        continue;
-
-                    XElement gameObjectElement = new XElement(gameObject.GetType().Name);
-                    gameObject.WriteToElement(gameObjectElement);
-                    root.Add(gameObjectElement);
-                }
-                root.Save(saveFileDialog.FileName);
-            }
+            if (string.IsNullOrEmpty(lastFileName))
+                saveLevelAsToolStripMenuItem_Click(sender, e);
+            else
+                SaveToFile(lastFileName);
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            this.Close();
         }
 
         private void undoToolStripMenuItem_Click(object sender, EventArgs e)
@@ -990,6 +1026,14 @@ namespace IronJumpLevelEditor_CS
             }
         }
 
+        private void aboutIronJumpLevelEditorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (AboutBox about = new AboutBox())
+            {
+                about.ShowDialog();
+            }
+        }
+
         #endregion
 
         #region Scrolling
@@ -1013,6 +1057,62 @@ namespace IronJumpLevelEditor_CS
             levelView.Invalidate();
         }
 
-        #endregion
+        #endregion        
+
+        private bool SaveChangesQuestion()
+        {
+            if (undoManager.NeedsSave)
+            {
+                var result = MessageBox.Show("Do you want to save changes?",
+                    Application.ProductName, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+
+                switch (result)
+                {
+                    case DialogResult.Yes:
+                        saveLevelToolStripMenuItem_Click(this, EventArgs.Empty);
+                        if (undoManager.NeedsSave)
+                            return false;
+                        break;
+                    case DialogResult.Cancel:
+                        return false;
+                    case DialogResult.No:
+                    default:
+                        break;
+                }
+            }
+
+            return true;
+        }
+
+        private void DocumentForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!SaveChangesQuestion())
+                e.Cancel = true;
+        }
+
+        private void editToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            if (undoManager.CanUndo)
+            {
+                undoToolStripMenuItem.Text = "Undo " + undoManager.UndoName;
+                undoToolStripMenuItem.Enabled = true;
+            }
+            else
+            {
+                undoToolStripMenuItem.Text = "Undo";
+                undoToolStripMenuItem.Enabled = false;
+            }
+
+            if (undoManager.CanRedo)
+            {
+                redoToolStripMenuItem.Text = "Redo " + undoManager.RedoName;
+                redoToolStripMenuItem.Enabled = true;
+            }
+            else
+            {
+                redoToolStripMenuItem.Text = "Redo";
+                redoToolStripMenuItem.Enabled = false;
+            }
+        }
     }
 }
