@@ -47,8 +47,6 @@ namespace IronJumpLevelEditor_CS
             game.InputAcceleration = inputAcceleration;
             game.Update();
             gameView.Invalidate();
-
-            this.Text = string.Format("Game Simulation, Diamonds: {0}/{1}", game.DiamondsPicked, game.DiamondsCount);
         }
 
         private void gameView_PaintCanvas(object sender, CanvasEventArgs e)

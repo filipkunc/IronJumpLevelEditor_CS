@@ -24,6 +24,6 @@ namespace GLCanvas
 		void FillRectangle(RectangleF rect);
 		void DrawRectangle(RectangleF rect);
 
-		FPTexture ^CreateTexture(Bitmap ^bitmap);		
+		FPTexture ^CreateTexture(Bitmap ^bitmap, bool convertToAlpha);		
 	};
 }

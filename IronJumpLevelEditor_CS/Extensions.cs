@@ -11,15 +11,9 @@ namespace IronJumpLevelEditor_CS
 {
     public static class Extensions
     {
-        public static void Draw(this FPTexture texture, PointF position, int widthSegments, int heightSegments)
+        public static FPTexture CreateTexture(this FPCanvas canvas, Bitmap bitmap)
         {
-            for (int y = 0; y < heightSegments; y++)
-            {
-                for (int x = 0; x < widthSegments; x++)
-                {
-                    texture.Draw(new PointF(position.X + x * texture.Width, position.Y + y * texture.Height));
-                }
-            }
+            return canvas.CreateTexture(bitmap, false);
         }
 
         public static float ParseFloat(this XElement element, string child)

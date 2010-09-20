@@ -5,16 +5,19 @@ using System.Text;
 using System.Drawing;
 using GLCanvas;
 using IronJumpLevelEditor_CS.Properties;
+using System.Globalization;
 
 namespace IronJumpLevelEditor_CS.PortedClasses
 {
     public class FPGame : FPGameProtocol
     {
         static FPTexture backgroundTexture = null;
+        static FPTexture fontTexture = null;
 
         public static void InitTexture(FPCanvas canvas)
         {
             backgroundTexture = canvas.CreateTexture(Resources.marbleblue);
+            fontTexture = canvas.CreateTexture(Resources.AndaleMono, true);
         }
 
         List<FPGameObject> gameObjects;
@@ -136,6 +139,20 @@ namespace IronJumpLevelEditor_CS.PortedClasses
             }
             player.Draw(canvas);
             player.DrawSpeedUp(canvas);
+
+            canvas.SetCurrentColor(Color.FromArgb(204, Color.White));
+
+            fontTexture.DrawText(string.Format("Diamonds: {0}/{1}", diamondsPicked, diamondsCount), new PointF(3.0f, 0.0f), 16, 16, 32, 13);
+
+            string speedUpText = null;
+            if (player.SpeedUpCounter > 0)
+                speedUpText = string.Format(CultureInfo.InvariantCulture, "{0:f1}", (FPPlayer.maxSpeedUpCount - player.SpeedUpCounter) / 60.0f);
+
+            if (!string.IsNullOrEmpty(speedUpText))
+            {
+                canvas.SetCurrentColor(Color.FromArgb(204, 127, 255, 255));
+                fontTexture.DrawText(speedUpText, new PointF(430.0f, 285.0f), 16, 16, 32, 13);
+            }
         }
 
         public void MoveWorld(float x, float y)

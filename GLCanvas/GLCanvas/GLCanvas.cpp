@@ -112,13 +112,13 @@ namespace GLCanvas
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
-	FPTexture ^FPCanvas::CreateTexture(Bitmap ^bitmap)
+	FPTexture ^FPCanvas::CreateTexture(Bitmap ^bitmap, bool convertToAlpha)
 	{
 		System::Drawing::Rectangle rect = System::Drawing::Rectangle(Point::Empty, bitmap->Size);
         BitmapData ^data = bitmap->LockBits(rect, ImageLockMode::ReadOnly, PixelFormat::Format32bppArgb);
 
 		unsigned int textureID;
-		::CreateTexture((GLubyte *)data->Scan0.ToPointer(), 4, &textureID, rect.Width, rect.Height, false);
+		::CreateTexture((GLubyte *)data->Scan0.ToPointer(), 4, &textureID, rect.Width, rect.Height, convertToAlpha);
 		
 		bitmap->UnlockBits(data);
 
