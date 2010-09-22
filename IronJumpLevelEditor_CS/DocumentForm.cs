@@ -66,6 +66,8 @@ namespace IronJumpLevelEditor_CS
         PointF beginSelection;
         PointF endSelection;
 
+        string beforeActionName = null;
+
         RectangleF SelectionRect
         {
             get { return beginSelection.RectangleFromPoints(endSelection); }
@@ -182,22 +184,31 @@ namespace IronJumpLevelEditor_CS
         private List<FPGameObject> previousObjects = null;
         private SortedSet<int> previousIndices = null;
 
-        private void BeforeAction()
+        private void BeforeAction(string name)
         {
             if (previousObjects != null || previousIndices != null)
                 throw new ApplicationException("BeforeAction called twice");
 
             previousObjects = new List<FPGameObject>();
             previousIndices = new SortedSet<int>();
+            beforeActionName = name;
 
             DuplicateCurrentObjectsAndIndices(previousObjects, previousIndices);
         }
 
         private void FullAction(string name, Action<DocumentForm> action)
         {
-            BeforeAction();
+            string previousActionName = beforeActionName;
+
+            if (previousActionName != null)
+                AfterAction(beforeActionName);
+
+            BeforeAction(name);
             action(this);
             AfterAction(name);
+
+            if (previousActionName != null)
+                BeforeAction(previousActionName);
         }
 
         private void AfterAction(string name)
@@ -207,6 +218,7 @@ namespace IronJumpLevelEditor_CS
 
             previousObjects = null;
             previousIndices = null;
+            beforeActionName = null;
         }
 
         #endregion
@@ -215,7 +227,7 @@ namespace IronJumpLevelEditor_CS
 
         private void AddNewGameObject(FPGameObject gameObject)
         {
-            BeforeAction();
+            BeforeAction("Add New Object");
             gameObjects.Add(gameObject);
             selectedIndices.Clear();
             selectedIndices.Add(gameObjects.Count - 1);
@@ -225,7 +237,7 @@ namespace IronJumpLevelEditor_CS
 
         private void BeginResize(FPDragHandle handle)
         {
-            BeforeAction();
+            BeforeAction("Resize Selected");
         }
 
         void EndResize(PointF move)
@@ -235,7 +247,7 @@ namespace IronJumpLevelEditor_CS
 
         private void BeginMove()
         {
-            BeforeAction();
+            BeforeAction("Move Selected");
         }
 
         void EndMove(PointF move)
