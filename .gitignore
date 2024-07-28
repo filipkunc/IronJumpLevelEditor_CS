@@ -19,6 +19,7 @@ obj
 *.user
 *.suo
 *.sdf
+.vs
 
 # windows noise
 Thumbs.db
