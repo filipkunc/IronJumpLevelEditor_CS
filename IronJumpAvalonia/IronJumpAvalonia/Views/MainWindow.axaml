@@ -8,5 +8,18 @@
         x:Class="IronJumpAvalonia.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Title="IronJumpAvalonia">
-        <views:MainView />
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="_File">
+        <MenuItem Header="_Open..."/>
+        <Separator/>
+        <MenuItem Header="_Exit"/>
+      </MenuItem>
+      <MenuItem Header="_Edit">
+        <MenuItem Header="Copy"/>
+        <MenuItem Header="Paste"/>
+      </MenuItem>
+    </Menu>
+    <views:MainView />
+  </DockPanel>
 </Window>
