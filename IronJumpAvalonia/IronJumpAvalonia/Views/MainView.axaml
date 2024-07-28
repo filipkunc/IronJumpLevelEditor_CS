@@ -12,8 +12,49 @@
          to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
     <vm:MainViewModel />
   </Design.DataContext>
-
-  <ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
-    <cc:LevelEditor Width="8000" Height="8000" />
-  </ScrollViewer>
+  <DockPanel Background="Black">
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="_File">
+        <MenuItem Header="_Open..." Click="OpenLevel_Click"/>
+        <Separator/>
+        <MenuItem Header="_Exit"/>
+      </MenuItem>
+      <MenuItem Header="_Edit">
+        <MenuItem Header="Copy"/>
+        <MenuItem Header="Paste"/>
+      </MenuItem>
+    </Menu>
+    <ListBox Grid.Column="0" Background="#373C59" HorizontalAlignment="Left" ScrollViewer.AllowAutoHide="False" Margin="0,0,2,0">
+      <ListBoxItem>
+        <Image Source="/Assets/ball.png" Stretch="None"></Image>
+      </ListBoxItem>
+      <ListBoxItem>
+        <Image Source="/Assets/plos_marble.png" Stretch="None"></Image>
+      </ListBoxItem>
+      <ListBoxItem>
+        <Image Source="/Assets/movable.png" Stretch="None"></Image>
+      </ListBoxItem>
+      <ListBoxItem>
+        <Image Source="/Assets/vytah01.png" Stretch="None"></Image>
+      </ListBoxItem>
+      <ListBoxItem>
+        <Image Source="/Assets/diamond.png" Stretch="None"></Image>
+      </ListBoxItem>
+      <ListBoxItem>
+        <Image Source="/Assets/magnet.png" Stretch="None"></Image>
+      </ListBoxItem>
+      <ListBoxItem>
+        <Image Source="/Assets/speed_symbol.png" Stretch="None"></Image>
+      </ListBoxItem>
+      <ListBoxItem>
+        <Image Source="/Assets/trampoline01.png" Stretch="None"></Image>
+      </ListBoxItem>
+      <ListBoxItem>
+        <Image Source="/Assets/exit.png" Stretch="None"></Image>
+      </ListBoxItem>
+    </ListBox>
+    <ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
+      <cc:LevelEditor x:Name="levelEditor" Width="8000" Height="8000" />
+    </ScrollViewer>
+  </DockPanel>
 </UserControl>
