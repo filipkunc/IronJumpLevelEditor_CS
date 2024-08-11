@@ -24,7 +24,7 @@
         <MenuItem Header="Paste"/>
       </MenuItem>
     </Menu>
-    <ListBox Grid.Column="0" Background="#373C59" HorizontalAlignment="Left" ScrollViewer.AllowAutoHide="False" Margin="0,0,2,0">
+    <ListBox x:Name="factoryView" Grid.Column="0" Background="#373C59" HorizontalAlignment="Left" ScrollViewer.AllowAutoHide="False" Margin="0,0,2,0">
       <ListBoxItem>
         <Image Source="/Assets/ball.png" Stretch="None"></Image>
       </ListBoxItem>

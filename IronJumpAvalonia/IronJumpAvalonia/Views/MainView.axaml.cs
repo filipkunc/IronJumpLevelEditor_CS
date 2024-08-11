@@ -9,6 +9,7 @@ namespace IronJumpAvalonia.Views
 		public MainView()
 		{
 			InitializeComponent();
+			levelEditor.FactoryView = factoryView;
 		}
 
 		private async void OpenLevel_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

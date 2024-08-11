@@ -63,6 +63,38 @@ namespace IronJumpAvalonia.Controls
 		Point _endMovePoint;
 		FPDragHandle _currentHandle = FPDragHandle.None;
 
+		public ListBox FactoryView {  get; set; }
+
+		List<Func<FPGameObject>> _factories = new List<Func<FPGameObject>>
+		{
+			() => new FPPlayer(),
+			() => new FPPlatform(),
+			() => new FPMovablePlatform(),
+			() => new FPElevator(),
+			() => new FPDiamond(),
+			() => new FPMagnet(),
+			() => new FPSpeedPowerUp(),
+			() => new FPTrampoline(),
+			() => new FPExit(),
+		};
+
+		Func<FPGameObject> SelectedFactory
+		{
+			get
+			{
+				if (FactoryView.SelectedIndex >= 0 && FactoryView.SelectedIndex < _factories.Count)
+					return _factories[FactoryView.SelectedIndex];
+				return null;
+			}
+			set
+			{
+				if (_previousObjects != null)
+					AfterAction("Add New Object");
+				FactoryView.SelectedIndex = -1;
+				FactoryView.InvalidateVisual();
+			}
+		}
+
 		void DrawGrid(DrawingContext context)
 		{
 			var rect = ClippedBounds;
@@ -105,7 +137,7 @@ namespace IronJumpAvalonia.Controls
 			_previousObjects = null;
 			_previousIndices = null;
 			_gameObjects.Clear();
-			//SelectedFactory = null;
+			SelectedFactory = null;
 
 			XElement root = XElement.Parse(fileContent);
 			foreach (var element in root.Elements())
@@ -135,62 +167,87 @@ namespace IronJumpAvalonia.Controls
 
 			var location = e.GetPosition(this);
 			var flags = e.KeyModifiers;
-			bool startSelection = true;
 
-			if (flags.HasFlag(KeyModifiers.Control))
-			{
-				for (int i = 0; i < _gameObjects.Count; i++)
-				{
-					var gameObject = _gameObjects[i];
-					if (gameObject.Rect.Contains(location))
-					{
-						if (_selectedIndices.Contains(i))
-							_selectedIndices.Remove(i);
-						else
-							_selectedIndices.Add(i);
 
-						startSelection = false;
-						break;
-					}
-				}
-			}
-			else if (flags.HasFlag(KeyModifiers.Shift))
+			if (_currentHandle != FPDragHandle.None && _currentHandle != FPDragHandle.Center)
 			{
-				for (int i = 0; i < _gameObjects.Count; i++)
-				{
-					var gameObject = _gameObjects[i];
-					if (gameObject.Rect.Contains(location))
-					{
-						_selectedIndices.Add(i);
-						startSelection = false;
-						break;
-					}
-				}
+				BeginResize(_currentHandle);
+				return;
 			}
-			else if (_currentHandle == FPDragHandle.None)
+
+			if (SelectedFactory != null)
 			{
-				for (int i = 0; i < _gameObjects.Count; i++)
-				{
-					var gameObject = _gameObjects[i];
-					if (gameObject.Rect.Contains(location))
-					{
-						_selectedIndices.Clear();
-						_selectedIndices.Add(i);
-						startSelection = false;
-						break;
-					}
-				}
+				var draggedObject = SelectedFactory();
+				int x = (int)location.X;
+				int y = (int)location.Y;
+				x /= 32;
+				x *= 32;
+				y /= 32;
+				y *= 32;
+				_beginMovePoint = _beginMovePoint.WithX(x).WithY(y);
+				_endMovePoint = _beginMovePoint;
+				draggedObject.Move(x, y);
+				AddNewGameObject(draggedObject);
 			}
 			else
 			{
-				startSelection = false;
-				BeginMove();
-			}
+				bool startSelection = true;
 
-			if (startSelection)
-			{
-				_drawingSelection = true;
-				_beginSelection = _endSelection = location;
+				if (flags.HasFlag(KeyModifiers.Control))
+				{
+					for (int i = 0; i < _gameObjects.Count; i++)
+					{
+						var gameObject = _gameObjects[i];
+						if (gameObject.Rect.Contains(location))
+						{
+							if (_selectedIndices.Contains(i))
+								_selectedIndices.Remove(i);
+							else
+								_selectedIndices.Add(i);
+
+							startSelection = false;
+							break;
+						}
+					}
+				}
+				else if (flags.HasFlag(KeyModifiers.Shift))
+				{
+					for (int i = 0; i < _gameObjects.Count; i++)
+					{
+						var gameObject = _gameObjects[i];
+						if (gameObject.Rect.Contains(location))
+						{
+							_selectedIndices.Add(i);
+							startSelection = false;
+							break;
+						}
+					}
+				}
+				else if (_currentHandle == FPDragHandle.None)
+				{
+					for (int i = 0; i < _gameObjects.Count; i++)
+					{
+						var gameObject = _gameObjects[i];
+						if (gameObject.Rect.Contains(location))
+						{
+							_selectedIndices.Clear();
+							_selectedIndices.Add(i);
+							startSelection = false;
+							break;
+						}
+					}
+				}
+				else
+				{
+					startSelection = false;
+					BeginMove();
+				}
+
+				if (startSelection)
+				{
+					_drawingSelection = true;
+					_beginSelection = _endSelection = location;
+				}
 			}
 			InvalidateVisual();
 		}
@@ -248,6 +305,27 @@ namespace IronJumpAvalonia.Controls
 						default:
 							break;
 					}
+					InvalidateVisual();
+				}
+				else if (SelectedFactory != null)
+				{
+					int widthSegments = (int)((location.X - _endMovePoint.X + 16.0f) / 32.0f);
+					int heightSegments = (int)((location.Y - _endMovePoint.Y + 16.0f) / 32.0f);
+
+					var draggedObjectLocation = _endMovePoint;
+					if (widthSegments < 0)
+						draggedObjectLocation = draggedObjectLocation.WithX(draggedObjectLocation.X + widthSegments * 32.0f);
+					if (heightSegments < 0)
+						draggedObjectLocation = draggedObjectLocation.WithY(draggedObjectLocation.Y + heightSegments * 32.0f);
+
+					widthSegments = Math.Max(Math.Abs(widthSegments), 1);
+					heightSegments = Math.Max(Math.Abs(heightSegments), 1);
+
+					SetDraggedObjectPosition((float)draggedObjectLocation.X, (float)draggedObjectLocation.Y);
+					var draggedObject = DraggedObject;
+
+					draggedObject.WidthSegments = widthSegments;
+					draggedObject.HeightSegments = heightSegments;
 					InvalidateVisual();
 				}
 			}
@@ -353,6 +431,8 @@ namespace IronJumpAvalonia.Controls
 					EndMove(move);
 				else if (_currentHandle != FPDragHandle.None)
 					EndResize(move);
+
+				SelectedFactory = null;
 			}
 			InvalidateVisual();
 		}
