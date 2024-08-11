@@ -21,6 +21,23 @@ namespace IronJumpAvalonia.Controls
 {
 	public class LevelEditor : Control
 	{
+		public enum FPDragHandle
+		{
+			None = 0,
+
+			TopLeft,
+			BottomLeft,
+			TopRight,
+			BottomRight,
+
+			MiddleLeft,
+			MiddleTop,
+			MiddleRight,
+			MiddleBottom,
+
+			Center
+		}
+
 		UndoManager _undoManager = new UndoManager();
 
 		Brush _backBrush = new SolidColorBrush(Color.FromRgb(55, 60, 89));
@@ -41,6 +58,10 @@ namespace IronJumpAvalonia.Controls
 
 		List<FPGameObject> _gameObjects = new List<FPGameObject>();
 		SortedSet<int> _selectedIndices = new SortedSet<int>();
+
+		Point _beginMovePoint;
+		Point _endMovePoint;
+		FPDragHandle _currentHandle = FPDragHandle.None;
 
 		void DrawGrid(DrawingContext context)
 		{
@@ -131,6 +152,38 @@ namespace IronJumpAvalonia.Controls
 			base.OnPointerReleased(e);
 			if (_drawingSelection)
 			{
+				var selectionRect = SelectionRect;
+				var flags = e.KeyModifiers;
+
+				if (flags.HasFlag(KeyModifiers.Control))
+				{
+					for (int i = 0; i < _gameObjects.Count; i++)
+					{
+						var gameObject = _gameObjects[i];
+						if (selectionRect.Intersects(gameObject.Rect))
+						{
+							if (_selectedIndices.Contains(i))
+								_selectedIndices.Remove(i);
+							else
+								_selectedIndices.Add(i);
+						}
+					}
+				}
+				else
+				{
+					if (!flags.HasFlag(KeyModifiers.Shift))
+						_selectedIndices.Clear();
+
+					for (int i = 0; i < _gameObjects.Count; i++)
+					{
+						var gameObject = _gameObjects[i];
+						if (selectionRect.Intersects(gameObject.Rect))
+						{
+							_selectedIndices.Add(i);
+						}
+					}
+				}
+
 				_drawingSelection = false;
 				InvalidateVisual();
 			}
@@ -228,29 +281,234 @@ namespace IronJumpAvalonia.Controls
 				_gameObjects.Add(gameObject.NextPart);
 		}
 
-		//private void BeginResize(FPDragHandle handle)
-		//{
-		//	BeforeAction("Resize Selected");
-		//}
+		private void BeginResize(FPDragHandle handle)
+		{
+			BeforeAction("Resize Selected");
+		}
 
-		//void EndResize(PointF move)
-		//{
-		//	AfterAction("Resize Selected");
-		//}
+		void EndResize(Point move)
+		{
+			AfterAction("Resize Selected");
+		}
 
-		//private void BeginMove()
-		//{
-		//	BeforeAction("Move Selected");
-		//}
+		private void BeginMove()
+		{
+			BeforeAction("Move Selected");
+		}
 
-		//void EndMove(PointF move)
-		//{
-		//	AfterAction("Move Selected");
-		//}
+		void EndMove(Point move)
+		{
+			AfterAction("Move Selected");
+		}
 
 		private void DrawHandlesOnGameObject(DrawingContext context, FPGameObject gameObject)
 		{
+			var rect = gameObject.Rect;
 
+			var whiteBrush = new SolidColorBrush(Color.FromArgb(204, 255, 255, 255));
+			var redBrush = new SolidColorBrush(Color.FromArgb(204, 255, 0, 0));
+			var yellowBrush = new SolidColorBrush(Color.FromArgb(204, 255, 255, 0));
+
+			context.DrawRectangle(new Pen(whiteBrush), rect);
+
+			var draggedObject = DraggedObject;
+
+			bool widthHandles = false;
+			bool heightHandles = false;
+
+			if (draggedObject != null)
+			{
+				widthHandles = draggedObject.WidthSegments > 0;
+				heightHandles = draggedObject.HeightSegments > 0;
+			}
+
+			for (FPDragHandle handle = FPDragHandle.TopLeft; handle < FPDragHandle.Center; handle++)
+			{
+				if (!widthHandles && IsWidthHandle(handle))
+					continue;
+
+				if (!heightHandles && IsHeightHandle(handle))
+					continue;
+
+				var handleBrush = handle == _currentHandle ? redBrush: yellowBrush;
+				var handlePoint = PointFromHandleAroundRect(handle, rect);
+				context.FillRectangle(handleBrush, new Rect(handlePoint.X - 3, handlePoint.Y - 3, 6, 6));
+			}
+		}
+
+		FPGameObject DraggedObject
+		{
+			get
+			{
+				if (_selectedIndices.Count == 1)
+					return _gameObjects[_selectedIndices.First()];
+				return null;
+			}
+		}
+
+		bool RespondsToDragHandle(FPGameObject gameObject, FPDragHandle dragHandle)
+		{
+			bool respondsToWidth = gameObject.WidthSegments > 0;
+			bool respondsToHeight = gameObject.HeightSegments > 0;
+
+			if (!respondsToWidth && IsWidthHandle(dragHandle))
+				return false;
+
+			if (!respondsToHeight && IsHeightHandle(dragHandle))
+				return false;
+
+			return true;
+		}
+
+		void SetDraggedObjectPosition(float x, float y)
+		{
+			var draggedObject = DraggedObject;
+			draggedObject.Move(x - draggedObject.X, y - draggedObject.Y);
+		}
+
+		void ResizeDraggedObjectLeft(float x)
+		{
+			var draggedObject = DraggedObject;
+			int widthSegments = (int)((x - _endMovePoint.X + 16.0f) / 32.0f);
+
+			if (draggedObject.WidthSegments - widthSegments < 1)
+				widthSegments = 0;
+
+			draggedObject.Move(widthSegments * 32.0f, 0.0f);
+			_endMovePoint = _endMovePoint.WithX(_endMovePoint.X + widthSegments * 32.0f);
+			draggedObject.WidthSegments -= widthSegments;
+		}
+
+		void ResizeDraggedObjectRight(float x)
+		{
+			var draggedObject = DraggedObject;
+			int widthSegments = (int)((x - _endMovePoint.X + 16.0f) / 32.0f);
+
+			if (draggedObject.WidthSegments + widthSegments < 1)
+				widthSegments = 0;
+
+			_endMovePoint = _endMovePoint.WithX(_endMovePoint.X + widthSegments * 32.0f);
+			draggedObject.WidthSegments += widthSegments;
+		}
+
+		void ResizeDraggedObjectTop(float y)
+		{
+			var draggedObject = DraggedObject;
+			int heightSegments = (int)((y - _endMovePoint.Y + 16.0f) / 32.0f);
+
+			if (draggedObject.HeightSegments - heightSegments < 1)
+				heightSegments = 0;
+
+			draggedObject.Move(0.0f, heightSegments * 32.0f);
+			_endMovePoint = _endMovePoint.WithY(_endMovePoint.Y + heightSegments * 32.0f);
+			draggedObject.HeightSegments -= heightSegments;
+		}
+
+		void ResizeDraggedObjectBottom(float y)
+		{
+			var draggedObject = DraggedObject;
+			int heightSegments = (int)((y - _endMovePoint.Y + 16.0f) / 32.0f);
+
+			if (draggedObject.HeightSegments + heightSegments < 1)
+				heightSegments = 0;
+
+			_endMovePoint = _endMovePoint.WithY(_endMovePoint.Y + heightSegments * 32.0f);
+			draggedObject.HeightSegments += heightSegments;
+		}
+
+		void MoveDraggedObject(float x, float y)
+		{
+			var draggedObject = DraggedObject;
+			int widthSegments = (int)((x - _endMovePoint.X + 16.0f) / 32.0f);
+			int heightSegments = (int)((y - _endMovePoint.Y + 16.0f) / 32.0f);
+
+			draggedObject.Move(widthSegments * 32.0f, heightSegments * 32.0f);
+			_endMovePoint = _endMovePoint.WithX(_endMovePoint.X + widthSegments * 32.0f);
+			_endMovePoint = _endMovePoint.WithY(_endMovePoint.Y + heightSegments * 32.0f);
+		}
+
+		void MoveSelectedObjects(float x, float y)
+		{
+			int widthSegments = (int)((x - _endMovePoint.X + 16.0f) / 32.0f);
+			int heightSegments = (int)((y - _endMovePoint.Y + 16.0f) / 32.0f);
+
+			foreach (var index in _selectedIndices)
+			{
+				var gameObject = _gameObjects[index];
+				gameObject.Move(widthSegments * 32.0f, heightSegments * 32.0f);
+			}
+
+			_endMovePoint = _endMovePoint.WithX(_endMovePoint.X + widthSegments * 32.0f);
+			_endMovePoint = _endMovePoint.WithY(_endMovePoint.Y + heightSegments * 32.0f);
+		}
+
+		bool IsWidthHandle(FPDragHandle handle)
+		{
+			switch (handle)
+			{
+				case FPDragHandle.TopLeft:
+				case FPDragHandle.BottomLeft:
+				case FPDragHandle.TopRight:
+				case FPDragHandle.BottomRight:
+				case FPDragHandle.MiddleLeft:
+				case FPDragHandle.MiddleRight:
+					return true;
+				case FPDragHandle.MiddleTop:
+				case FPDragHandle.MiddleBottom:
+				case FPDragHandle.Center:
+				case FPDragHandle.None:
+				default:
+					return false;
+			}
+		}
+
+		bool IsHeightHandle(FPDragHandle handle)
+		{
+			switch (handle)
+			{
+				case FPDragHandle.TopLeft:
+				case FPDragHandle.BottomLeft:
+				case FPDragHandle.TopRight:
+				case FPDragHandle.BottomRight:
+				case FPDragHandle.MiddleTop:
+				case FPDragHandle.MiddleBottom:
+					return true;
+				case FPDragHandle.MiddleLeft:
+				case FPDragHandle.MiddleRight:
+				case FPDragHandle.Center:
+				case FPDragHandle.None:
+				default:
+					return false;
+			}
+		}
+
+		Point PointFromHandleAroundRect(FPDragHandle handle, Rect rect)
+		{
+			switch (handle)
+			{
+				case FPDragHandle.TopLeft:
+					return new Point(rect.X, rect.Y);
+				case FPDragHandle.BottomLeft:
+					return new Point(rect.X, rect.Y + rect.Height);
+				case FPDragHandle.TopRight:
+					return new Point(rect.X + rect.Width, rect.Y);
+				case FPDragHandle.BottomRight:
+					return new Point(rect.X + rect.Width, rect.Y + rect.Height);
+
+				case FPDragHandle.MiddleLeft:
+					return new Point(rect.X, rect.Y + rect.Height / 2.0f);
+				case FPDragHandle.MiddleTop:
+					return new Point(rect.X + rect.Width / 2.0f, rect.Y);
+				case FPDragHandle.MiddleRight:
+					return new Point(rect.X + rect.Width, rect.Y + rect.Height / 2.0f);
+				case FPDragHandle.MiddleBottom:
+					return new Point(rect.X + rect.Width / 2.0f, rect.Y + rect.Height);
+				case FPDragHandle.Center:
+					return new Point(rect.X + rect.Width / 2.0f, rect.Y + rect.Height / 2.0f);
+
+				default:
+					return new Point();
+			}
 		}
 
 		public override void Render(DrawingContext context)
@@ -273,6 +531,11 @@ namespace IronJumpAvalonia.Controls
 					}
 				}
 			}
+
+			var draggedObject = this.DraggedObject;
+
+			if (draggedObject != null)
+				DrawHandlesOnGameObject(context, draggedObject);
 
 			if (_drawingSelection)
 			{
