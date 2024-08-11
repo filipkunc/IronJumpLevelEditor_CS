@@ -132,17 +132,177 @@ namespace IronJumpAvalonia.Controls
 		protected override void OnPointerPressed(PointerPressedEventArgs e)
 		{
 			base.OnPointerPressed(e);
-			_drawingSelection = true;
-			_beginSelection = _endSelection = e.GetPosition(this);
+
+			var location = e.GetPosition(this);
+			var flags = e.KeyModifiers;
+			bool startSelection = true;
+
+			if (flags.HasFlag(KeyModifiers.Control))
+			{
+				for (int i = 0; i < _gameObjects.Count; i++)
+				{
+					var gameObject = _gameObjects[i];
+					if (gameObject.Rect.Contains(location))
+					{
+						if (_selectedIndices.Contains(i))
+							_selectedIndices.Remove(i);
+						else
+							_selectedIndices.Add(i);
+
+						startSelection = false;
+						break;
+					}
+				}
+			}
+			else if (flags.HasFlag(KeyModifiers.Shift))
+			{
+				for (int i = 0; i < _gameObjects.Count; i++)
+				{
+					var gameObject = _gameObjects[i];
+					if (gameObject.Rect.Contains(location))
+					{
+						_selectedIndices.Add(i);
+						startSelection = false;
+						break;
+					}
+				}
+			}
+			else if (_currentHandle == FPDragHandle.None)
+			{
+				for (int i = 0; i < _gameObjects.Count; i++)
+				{
+					var gameObject = _gameObjects[i];
+					if (gameObject.Rect.Contains(location))
+					{
+						_selectedIndices.Clear();
+						_selectedIndices.Add(i);
+						startSelection = false;
+						break;
+					}
+				}
+			}
+			else
+			{
+				startSelection = false;
+				BeginMove();
+			}
+
+			if (startSelection)
+			{
+				_drawingSelection = true;
+				_beginSelection = _endSelection = location;
+			}
 			InvalidateVisual();
 		}
 
 		protected override void OnPointerMoved(PointerEventArgs e)
 		{
 			base.OnPointerMoved(e);
-			if (_drawingSelection)
+			var currentPoint = e.GetCurrentPoint(this);
+			var location = e.GetPosition(this);
+			if (currentPoint.Properties.IsLeftButtonPressed)
 			{
-				_endSelection = e.GetPosition(this);
+				if (_drawingSelection)
+				{
+					_endSelection = location;
+					InvalidateVisual();
+				}
+				else if (_currentHandle != FPDragHandle.None)
+				{
+					switch (_currentHandle)
+					{
+						case FPDragHandle.TopLeft:
+							ResizeDraggedObjectTop((float)location.Y);
+							ResizeDraggedObjectLeft((float)location.X);
+							break;
+						case FPDragHandle.TopRight:
+							ResizeDraggedObjectTop((float)location.Y);
+							ResizeDraggedObjectRight((float)location.X);
+							break;
+						case FPDragHandle.BottomLeft:
+							ResizeDraggedObjectBottom((float)location.Y);
+							ResizeDraggedObjectLeft((float)location.X);
+							break;
+						case FPDragHandle.BottomRight:
+							ResizeDraggedObjectBottom((float)location.Y);
+							ResizeDraggedObjectRight((float)location.X);
+							break;
+						case FPDragHandle.MiddleTop:
+							ResizeDraggedObjectTop((float)location.Y);
+							break;
+						case FPDragHandle.MiddleBottom:
+							ResizeDraggedObjectBottom((float)location.Y);
+							break;
+						case FPDragHandle.MiddleLeft:
+							ResizeDraggedObjectLeft((float)location.X);
+							break;
+						case FPDragHandle.MiddleRight:
+							ResizeDraggedObjectRight((float)location.X);
+							break;
+						case FPDragHandle.Center:
+							if (_selectedIndices.Count == 1)
+								MoveDraggedObject((float)location.X, (float)location.Y);
+							else
+								MoveSelectedObjects((float)location.X, (float)location.Y);
+							break;
+						default:
+							break;
+					}
+					InvalidateVisual();
+				}
+			}
+			else
+			{
+				_currentHandle = FPDragHandle.None;
+
+				const double handleSize = 14.0;
+				var handleRect = new Rect(0.0, 0.0, handleSize, handleSize);
+
+				if (_selectedIndices.Count == 1)
+				{
+					var draggedObject = DraggedObject;
+					for (FPDragHandle handle = FPDragHandle.TopLeft; handle < FPDragHandle.Center; handle++)
+					{
+						if (!RespondsToDragHandle(draggedObject, handle))
+							continue;
+
+						var handlePoint = PointFromHandleAroundRect(handle, draggedObject.Rect);
+
+						handleRect = handleRect
+							.WithX(handlePoint.X - handleRect.Width / 2.0f)
+							.WithY(handlePoint.Y - handleRect.Height / 2.0f);
+
+						if (handleRect.Contains(location))
+						{
+							_currentHandle = handle;
+							_beginMovePoint = _endMovePoint = location;
+							break;
+						}
+					}
+
+					if (_currentHandle == FPDragHandle.None)
+					{
+						if (draggedObject.Rect.Contains(location))
+						{
+							_currentHandle = FPDragHandle.Center;
+							_beginMovePoint = _endMovePoint = location;
+						}
+					}
+				}
+				else
+				{
+					foreach (var index in _selectedIndices)
+					{
+						var gameObject = _gameObjects[index];
+						if (gameObject.Rect.Contains(location))
+						{
+							_currentHandle = FPDragHandle.Center;
+							_beginMovePoint = _endMovePoint = location;
+							break;
+						}
+					}
+
+				}
 				InvalidateVisual();
 			}
 		}
@@ -185,8 +345,16 @@ namespace IronJumpAvalonia.Controls
 				}
 
 				_drawingSelection = false;
-				InvalidateVisual();
 			}
+			else
+			{
+				var move = _endMovePoint.WithX(_endMovePoint.X - _beginMovePoint.X).WithY(_endMovePoint.Y - _beginMovePoint.Y);
+				if (_currentHandle == FPDragHandle.Center)
+					EndMove(move);
+				else if (_currentHandle != FPDragHandle.None)
+					EndResize(move);
+			}
+			InvalidateVisual();
 		}
 
 		private List<FPGameObject> _previousObjects = null;
