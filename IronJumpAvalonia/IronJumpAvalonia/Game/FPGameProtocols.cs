@@ -31,7 +31,7 @@ namespace IronJumpAvalonia.Game
         bool IsMovable { get; }
 
         void Move(float offsetX, float offsetY);
-        void Draw(DrawingContext context);
+        bool Draw(DrawingContext context, Rect bounds);
 
         FPGameObject Duplicate(float offsetX, float offsetY);
 

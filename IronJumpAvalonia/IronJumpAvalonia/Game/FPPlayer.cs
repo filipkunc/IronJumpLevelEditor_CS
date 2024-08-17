@@ -76,9 +76,14 @@ namespace IronJumpAvalonia.Game
             Y += offsetY;
         }
 
-        public void Draw(DrawingContext context)
+        public bool Draw(DrawingContext context, Rect bounds)
         {
-            playerTexture.Draw(context, X, Y, Rotation);
+            if (Rect.Intersects(bounds))
+            {
+                playerTexture.Draw(context, X, Y, Rotation);
+                return true;
+            }
+            return false;
         }
 
         public void DrawSpeedUp(DrawingContext context)

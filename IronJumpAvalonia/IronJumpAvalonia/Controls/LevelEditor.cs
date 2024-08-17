@@ -153,6 +153,15 @@ namespace IronJumpAvalonia.Controls
 			InvalidateVisual();
 		}
 
+		public void Play()
+		{
+			var gameWindow = new GameWindow();
+			gameWindow.Width = 480;
+			gameWindow.Height = 320;
+			gameWindow.Game = new FPGame(480, 320, _gameObjects);
+			gameWindow.Show();
+		}
+
 		private void Parent_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
 		{
 			if (e.Property == BoundsProperty)
@@ -770,9 +779,8 @@ namespace IronJumpAvalonia.Controls
 			for (int i = 0; i < _gameObjects.Count; i++)
 			{
 				var gameObject = _gameObjects[i];
-				if (gameObject.Rect.Intersects(bounds))
+				if (gameObject.Draw(context, bounds))
 				{
-					gameObject.Draw(context);
 					if (_selectedIndices.Contains(i))
 					{
 						DrawHandlesOnGameObject(context, gameObject);

@@ -34,5 +34,10 @@ namespace IronJumpAvalonia.Views
 				levelEditor.LoadLevel(fileContent);
 			}
 		}
+
+		private void GamePlay_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+		{
+			levelEditor.Play();
+		}
 	}
 }

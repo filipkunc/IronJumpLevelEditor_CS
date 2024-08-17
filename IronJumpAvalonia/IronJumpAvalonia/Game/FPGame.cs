@@ -115,6 +115,7 @@ namespace IronJumpAvalonia.Game
                                        FPMath.fmodf((float)_backgroundOffset.Y, 32.0f) - 32.0f);
 
             _backgroundTexture.Draw(context, (float)offset.X, (float)offset.Y, (int)(Width / _backgroundTexture.Size.Width) + 3, (int)(Height / _backgroundTexture.Size.Height) + 2);
+            var bounds = new Rect(0, 0, Width, Height);
 
             foreach (var gameObject in gameObjects)
             {
@@ -122,7 +123,7 @@ namespace IronJumpAvalonia.Game
                     continue;
 
                 if (!gameObject.IsTransparent)
-                    gameObject.Draw(context);
+                    gameObject.Draw(context, bounds);
             }
 
             foreach (var gameObject in gameObjects)
@@ -131,9 +132,9 @@ namespace IronJumpAvalonia.Game
                     continue;
 
                 if (gameObject.IsTransparent)
-                    gameObject.Draw(context);
+                    gameObject.Draw(context, bounds);
             }
-            player.Draw(context);
+            player.Draw(context, bounds);
             player.DrawSpeedUp(context);
 
             //canvas.SetCurrentColor(Color.FromArgb(204, Color.White));

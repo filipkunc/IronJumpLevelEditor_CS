@@ -103,10 +103,15 @@ namespace IronJumpAvalonia.Game
             }
         }
 
-        public void Draw(DrawingContext context)
+        public bool Draw(DrawingContext context, Rect bounds)
         {
-            var texture = _trampolineTextures[textureIndex];
-            texture.Draw(context, X, Y, WidthSegments);
+            if (Rect.Intersects(bounds))
+            {
+                var texture = _trampolineTextures[textureIndex];
+                texture.Draw(context, X, Y, WidthSegments);
+                return true;
+            }
+            return false;
         }
 
         public void InitFromElement(XElement element)

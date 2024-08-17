@@ -74,9 +74,14 @@ namespace IronJumpAvalonia.Game
             CollisionUpDown(game);
         }
 
-        public void Draw(DrawingContext context)
+        public bool Draw(DrawingContext context, Rect bounds)
         {
-            _movableTexture.Draw(context, X, Y, WidthSegments, HeightSegments);
+            if (Rect.Intersects(bounds))
+            {
+                _movableTexture.Draw(context, X, Y, WidthSegments, HeightSegments);
+                return true;
+            }
+            return false;
         }
 
         public bool CollisionLeftRight(FPGameProtocol game)

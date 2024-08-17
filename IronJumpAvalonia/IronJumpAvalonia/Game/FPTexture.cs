@@ -18,11 +18,15 @@ namespace IronJumpAvalonia.Game
 	{
 		SKBitmap _bitmap;
 		Rect _destRect;
+		int _opacity;
 
-		public FPTextureDrawOp(SKBitmap bitmap, Rect destRect)
+		static SKColorSpace _colorSpace = SKColorSpace.CreateSrgb();
+
+		public FPTextureDrawOp(SKBitmap bitmap, Rect destRect, int opacity)
 		{
 			_bitmap = bitmap;
 			_destRect = destRect;
+			_opacity = opacity;
 		}
 
 		public Rect Bounds => _destRect;
@@ -48,9 +52,13 @@ namespace IronJumpAvalonia.Game
 			{
 				SKRect destRect = new SKRect((float)_destRect.Left, (float)_destRect.Top, (float)_destRect.Right, (float)_destRect.Bottom);
 
-				var shader = SKShader.CreateBitmap(_bitmap, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat, 
+				var shader = SKShader.CreateBitmap(_bitmap, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat,
 					SKMatrix.CreateTranslation(-(destRect.Left % _bitmap.Width), -(destRect.Top % _bitmap.Height)));
 				paint.Shader = shader;
+				if (_opacity != 255)
+				{
+					paint.SetColor(new SKColorF(1.0f, 1.0f, 1.0f, _opacity / 255.0f), _colorSpace);
+				}
 				canvas.DrawRect(destRect, paint);
 			}
 
@@ -78,17 +86,17 @@ namespace IronJumpAvalonia.Game
 			_skBitmap = SKBitmap.Decode(memory);
 		}
 
-		public void Draw(DrawingContext context, float X, float Y, int widthSegments = 1, int heightSegments = 1)
+		public void Draw(DrawingContext context, float X, float Y, int widthSegments = 1, int heightSegments = 1, int opacity = 255)
 		{
 			if (widthSegments == 1 && heightSegments == 1)
 			{
+				using var opacityState = context.PushOpacity(opacity / 255.0);
 				context.DrawImage(_bitmap, new Rect(X, Y, Size.Width, Size.Height));
 			}
 			else
 			{
 				var destRect = new Rect(X, Y, Size.Width * widthSegments, Size.Height * heightSegments);
-				context.Custom(new FPTextureDrawOp(_skBitmap, destRect));
-				//context.DrawRectangle(new Pen(Brushes.Red), destRect);
+				context.Custom(new FPTextureDrawOp(_skBitmap, destRect, opacity));
 			}
 		}
 

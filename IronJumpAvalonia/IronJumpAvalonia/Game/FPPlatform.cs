@@ -45,9 +45,14 @@ namespace IronJumpAvalonia.Game
             Y += offsetY;
         }
 
-        public void Draw(DrawingContext context)
+        public bool Draw(DrawingContext context, Rect bounds)
         {
-            _platformTexture.Draw(context, X, Y, WidthSegments, HeightSegments);
+            if (Rect.Intersects(bounds))
+            {
+                _platformTexture.Draw(context, X, Y, WidthSegments, HeightSegments);
+                return true;
+            }
+            return false;
         }
 
         public FPGameObject Duplicate(float offsetX, float offsetY)

@@ -23,6 +23,9 @@
         <MenuItem Header="Copy"/>
         <MenuItem Header="Paste"/>
       </MenuItem>
+      <MenuItem Header="_Game">
+        <MenuItem Header="Play" Click="GamePlay_Click"/>
+      </MenuItem>
     </Menu>
     <ListBox x:Name="factoryView" Grid.Column="0" Background="#373C59" HorizontalAlignment="Left" ScrollViewer.AllowAutoHide="False" Margin="0,0,2,0">
       <ListBoxItem>
