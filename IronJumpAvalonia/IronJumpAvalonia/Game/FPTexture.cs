@@ -53,7 +53,7 @@ namespace IronJumpAvalonia.Game
 				SKRect destRect = new SKRect((float)_destRect.Left, (float)_destRect.Top, (float)_destRect.Right, (float)_destRect.Bottom);
 
 				var shader = SKShader.CreateBitmap(_bitmap, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat,
-					SKMatrix.CreateTranslation(-(destRect.Left % _bitmap.Width), -(destRect.Top % _bitmap.Height)));
+					SKMatrix.CreateTranslation(destRect.Left, destRect.Top));
 				paint.Shader = shader;
 				if (_opacity != 255)
 				{
@@ -102,8 +102,11 @@ namespace IronJumpAvalonia.Game
 
 		public void Draw(DrawingContext context, float X, float Y, float Rotation)
 		{
-			using var state = context.PushTransform(Matrix.CreateRotation(Rotation));
-			context.DrawImage(_bitmap, new Rect(X, Y, Size.Width, Size.Height));
+			var t1 = Matrix.CreateTranslation(-Size.Width / 2.0, -Size.Height / 2);
+			var t2 = Matrix.CreateTranslation(X + Size.Width / 2.0, Y + Size.Height / 2);
+			var r = Matrix.CreateRotation(Rotation * Math.PI / 180.0);
+			using var state = context.PushTransform(t1 * r * t2);
+			context.DrawImage(_bitmap, new Rect(0, 0, Size.Width, Size.Height));
 		}
 	}
 }
