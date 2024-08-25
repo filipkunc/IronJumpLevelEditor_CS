@@ -38,7 +38,7 @@
     <x>1696</x>
     <y>352</y>
     <widthSegments>2</widthSegments>
-    <heightSegments>3</heightSegments>
+    <heightSegments>2</heightSegments>
   </FPPlatform>
   <FPExit>
     <x>1888</x>
@@ -65,9 +65,9 @@
     <y>224</y>
   </FPDiamond>
   <FPTrampoline>
-    <x>1696</x>
-    <y>512</y>
-    <widthSegments>3</widthSegments>
+    <x>1760</x>
+    <y>544</y>
+    <widthSegments>2</widthSegments>
   </FPTrampoline>
   <FPPlatform>
     <x>1888</x>
@@ -80,5 +80,54 @@
     <y>192</y>
     <widthSegments>2</widthSegments>
     <heightSegments>4</heightSegments>
+  </FPPlatform>
+  <FPPlatform>
+    <x>1696</x>
+    <y>544</y>
+    <widthSegments>2</widthSegments>
+    <heightSegments>2</heightSegments>
+  </FPPlatform>
+  <FPPlatform>
+    <x>1760</x>
+    <y>576</y>
+    <widthSegments>4</widthSegments>
+    <heightSegments>1</heightSegments>
+  </FPPlatform>
+  <FPPlatform>
+    <x>1888</x>
+    <y>320</y>
+    <widthSegments>4</widthSegments>
+    <heightSegments>9</heightSegments>
+  </FPPlatform>
+  <FPMovablePlatform>
+    <x>1216</x>
+    <y>256</y>
+    <widthSegments>3</widthSegments>
+    <heightSegments>4</heightSegments>
+  </FPMovablePlatform>
+  <FPSpeedPowerUp>
+    <x>1152</x>
+    <y>352</y>
+  </FPSpeedPowerUp>
+  <FPPlatform>
+    <x>288</x>
+    <y>224</y>
+    <widthSegments>8</widthSegments>
+    <heightSegments>3</heightSegments>
+  </FPPlatform>
+  <FPMagnet>
+    <x>672</x>
+    <y>96</y>
+    <widthSegments>9</widthSegments>
+  </FPMagnet>
+  <FPDiamond>
+    <x>448</x>
+    <y>128</y>
+  </FPDiamond>
+  <FPPlatform>
+    <x>224</x>
+    <y>96</y>
+    <widthSegments>2</widthSegments>
+    <heightSegments>7</heightSegments>
   </FPPlatform>
 </IronJumpLevel>
