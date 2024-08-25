@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Rendering;
 using IronJumpAvalonia.Controls;
 using IronJumpAvalonia.Game;
 
@@ -11,7 +12,7 @@ public partial class GameWindow : Window
     public GameWindow()
     {
         InitializeComponent();
-    }
+	}
 
     public FPGame Game
     {

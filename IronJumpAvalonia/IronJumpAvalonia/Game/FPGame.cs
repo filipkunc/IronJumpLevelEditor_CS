@@ -19,142 +19,170 @@ namespace IronJumpAvalonia.Game
             _backgroundTexture = new FPTexture("marbleblue.png");
 		}
 
-        List<FPGameObject> gameObjects;
-        FPPlayer player;
+        List<FPGameObject> _levelObjects;
+        List<FPGameObject> _gameObjects;
+        FPPlayer _player;
 
-        int diamondsPicked;
-        int diamondsCount;
+        int _diamondsPicked;
+        int _diamondsCount;
 
         Vector _backgroundOffset;
 
         public Vector InputAcceleration { get; set; }
 
-        public float Width { get; private set; }
-        public float Height { get; private set; }
+        public float Width { get; set; }
+        public float Height { get; set; }
 
-        public int DiamondsPicked { get { return diamondsPicked; } }
-        public int DiamondsCount { get { return diamondsCount; } }
+        public int DiamondsPicked { get { return _diamondsPicked; } }
+        public int DiamondsCount { get { return _diamondsCount; } }
 
         public FPGameObject Player
         {
-            get { return player; }
+            get { return _player; }
         }
 
         public List<FPGameObject> GameObjects
         {
-            get { return gameObjects; }
+            get { return _gameObjects; }
         }
 
         public FPGame(float width, float height)
         {
-            gameObjects = new List<FPGameObject>();
-            player = new FPPlayer(width, height);
-
-            InputAcceleration = Vector.Zero;
             Width = width;
             Height = height;
-            _backgroundOffset = Vector.Zero;
-
-            diamondsPicked = 0;
-            diamondsCount = 0;
+            Reset();
         }
 
         public FPGame(float width, float height, IEnumerable<FPGameObject> levelObjects)
             : this(width, height)
         {
-            float playerPositionX = 0.0f;
-            float playerPositionY = 0.0f;
+            _levelObjects = levelObjects.ToList();
+			Reset();
+		}
 
-            foreach (var gameObject in levelObjects)
+        public void Reset()
+        {
+            _gameObjects = new List<FPGameObject>();
+			_player = new FPPlayer(Width, Height);
+
+            InputAcceleration = Vector.Zero;
+            _backgroundOffset = Vector.Zero;
+
+            _diamondsPicked = 0;
+            _diamondsCount = 0;
+
+            if (_levelObjects != null)
             {
-                if (gameObject is FPPlayer)
-                {
-                    playerPositionX = gameObject.X;
-                    playerPositionY = gameObject.Y;
-                }
-                else if (!(gameObject is FPElevatorEnd))
-                {
-                    if (gameObject is FPDiamond)
-                        diamondsCount++;
 
-                    gameObjects.Add(gameObject.Duplicate(0.0f, 0.0f));
+                float playerPositionX = 0.0f;
+                float playerPositionY = 0.0f;
+
+                foreach (var gameObject in _levelObjects)
+                {
+                    if (gameObject is FPPlayer)
+                    {
+                        playerPositionX = gameObject.X;
+                        playerPositionY = gameObject.Y;
+                    }
+                    else if (!(gameObject is FPElevatorEnd))
+                    {
+                        if (gameObject is FPDiamond)
+                            _diamondsCount++;
+
+                        _gameObjects.Add(gameObject.Duplicate(0.0f, 0.0f));
+                    }
                 }
+
+                MoveWorld(_player.X - playerPositionX, _player.Y - playerPositionY);
             }
-
-            MoveWorld(player.X - playerPositionX, player.Y - playerPositionY);
         }
 
         public void Update()
         {
-            diamondsPicked = 0;
+            _diamondsPicked = 0;
 
-            foreach (var gameObject in gameObjects)
+            foreach (var gameObject in _gameObjects)
             {
                 if (!gameObject.IsVisible)
                 {
                     if (gameObject is FPDiamond)
-                        diamondsPicked++;
+                        _diamondsPicked++;
                 }
 
                 if (!gameObject.IsMovable)
                     gameObject.Update(this);
             }
 
-            foreach (var gameObject in gameObjects)
+            foreach (var gameObject in _gameObjects)
             {
                 if (gameObject.IsMovable)
                     gameObject.Update(this);
             }
 
-            player.Update(this);
+            _player.Update(this);
         }
 
         public void Draw(DrawingContext context)
         {
+            var bounds = new Rect(0, 0, Width, Height);
+            var drawBuilder = new FPDrawBuilder(context, bounds);
+
             Vector offset = new Vector(FPMath.fmodf((float)_backgroundOffset.X, 32.0f) - 32.0f,
                                        FPMath.fmodf((float)_backgroundOffset.Y, 32.0f) - 32.0f);
 
-            _backgroundTexture.Draw(context, (float)offset.X, (float)offset.Y, (int)(Width / _backgroundTexture.Size.Width) + 3, (int)(Height / _backgroundTexture.Size.Height) + 2);
-            var bounds = new Rect(0, 0, Width, Height);
+            drawBuilder.AddSprite(_backgroundTexture, (float)offset.X, (float)offset.Y, (int)(Width / _backgroundTexture.Size.Width) + 3, (int)(Height / _backgroundTexture.Size.Height) + 2);
 
-            foreach (var gameObject in gameObjects)
+            foreach (var gameObject in _gameObjects)
             {
                 if (!gameObject.IsVisible)
                     continue;
 
                 if (!gameObject.IsTransparent)
-                    gameObject.Draw(context, bounds);
+                    gameObject.Draw(drawBuilder, bounds);
             }
 
-            foreach (var gameObject in gameObjects)
+            foreach (var gameObject in _gameObjects)
             {
                 if (!gameObject.IsVisible)
                     continue;
 
                 if (gameObject.IsTransparent)
-                    gameObject.Draw(context, bounds);
+                    gameObject.Draw(drawBuilder, bounds);
             }
-            player.Draw(context, bounds);
-            player.DrawSpeedUp(context);
+            
+            _player.Draw(drawBuilder, bounds);
+            _player.DrawSpeedUp(drawBuilder, bounds);
 
-            //canvas.SetCurrentColor(Color.FromArgb(204, Color.White));
+            drawBuilder.DrawAll();
 
-            //fontTexture.DrawText(string.Format("Diamonds: {0}/{1}", diamondsPicked, diamondsCount), new PointF(3.0f, 0.0f), 16, 16, 32, 13);
+			FormattedText diamondsText = new FormattedText(
+				$"Diamonds: {_diamondsPicked}/{_diamondsCount}",
+				CultureInfo.GetCultureInfo("en-us"),
+				FlowDirection.LeftToRight,
+				new Typeface("Verdana"),
+				16,
+				Brushes.White);
 
-            //string speedUpText = null;
-            //if (player.SpeedUpCounter > 0)
-            //    speedUpText = string.Format(CultureInfo.InvariantCulture, "{0:f1}", (FPPlayer.maxSpeedUpCount - player.SpeedUpCounter) / 60.0f);
+			context.DrawText(diamondsText, new Point(2, 18));
 
-            //if (!string.IsNullOrEmpty(speedUpText))
-            //{
-            //    canvas.SetCurrentColor(Color.FromArgb(204, 127, 255, 255));
-            //    fontTexture.DrawText(speedUpText, new PointF(430.0f, 285.0f), 16, 16, 32, 13);
-            //}
-        }
+            if (_player.SpeedUpCounter > 0)
+            {
+                FormattedText speedUpText = new FormattedText(
+					string.Format(CultureInfo.InvariantCulture, "Speed: {0:f1}s", (FPPlayer.maxSpeedUpCount - _player.SpeedUpCounter) / 60.0f),
+                    CultureInfo.GetCultureInfo("en-us"),
+                    FlowDirection.LeftToRight,
+                    new Typeface("Verdana"),
+                    16,
+                    new SolidColorBrush(Color.FromArgb(204, 127, 255, 255)));
+
+
+                context.DrawText(speedUpText, new Point(2, bounds.Bottom - 18));
+            }
+		}
 
         public void MoveWorld(float x, float y)
         {
-            foreach (var gameObject in gameObjects)
+            foreach (var gameObject in _gameObjects)
             {
                 gameObject.Move(x, y);
             }

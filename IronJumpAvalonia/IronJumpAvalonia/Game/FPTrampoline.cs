@@ -103,12 +103,12 @@ namespace IronJumpAvalonia.Game
             }
         }
 
-        public bool Draw(DrawingContext context, Rect bounds)
+        public bool Draw(FPDrawBuilder drawBuilder, Rect bounds)
         {
             if (Rect.Intersects(bounds))
             {
                 var texture = _trampolineTextures[textureIndex];
-                texture.Draw(context, X, Y, WidthSegments);
+                drawBuilder.AddSprite(texture, X, Y, WidthSegments);
                 return true;
             }
             return false;

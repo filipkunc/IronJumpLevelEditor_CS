@@ -64,11 +64,11 @@ namespace IronJumpAvalonia.Game
             }
         }
 
-        public bool Draw(DrawingContext context, Rect bounds)
+        public bool Draw(FPDrawBuilder drawBuilder, Rect bounds)
         {
 			if (Rect.Intersects(bounds))
 			{
-				_magnetTexture.Draw(context, X, Y, WidthSegments);
+                drawBuilder.AddSprite(_magnetTexture, X, Y, WidthSegments);
 				return true;
 			}
 			return false;

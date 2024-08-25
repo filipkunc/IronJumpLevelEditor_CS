@@ -11,102 +11,158 @@ using Avalonia.Skia;
 using SkiaSharp;
 using Avalonia.Rendering.SceneGraph;
 using System.IO;
+using System.Collections;
 
 namespace IronJumpAvalonia.Game
 {
-	public class FPTextureDrawOp : ICustomDrawOperation
-	{
-		SKBitmap _bitmap;
-		Rect _destRect;
-		int _opacity;
-
-		static SKColorSpace _colorSpace = SKColorSpace.CreateSrgb();
-
-		public FPTextureDrawOp(SKBitmap bitmap, Rect destRect, int opacity)
-		{
-			_bitmap = bitmap;
-			_destRect = destRect;
-			_opacity = opacity;
-		}
-
-		public Rect Bounds => _destRect;
-
-		public void Dispose() { }
-
-		public bool Equals(ICustomDrawOperation? other) => false;
-
-		public bool HitTest(Point p) => false;
-
-		public void Render(ImmediateDrawingContext context)
-		{
-			var leaseFeature = context.TryGetFeature<ISkiaSharpApiLeaseFeature>();
-			if (leaseFeature == null)
-				return;
-
-			using var lease = leaseFeature.Lease();
-			var canvas = lease.SkCanvas;
-
-			canvas.Save();
-
-			using (SKPaint paint = new SKPaint())
-			{
-				SKRect destRect = new SKRect((float)_destRect.Left, (float)_destRect.Top, (float)_destRect.Right, (float)_destRect.Bottom);
-
-				var shader = SKShader.CreateBitmap(_bitmap, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat,
-					SKMatrix.CreateTranslation(destRect.Left, destRect.Top));
-				paint.Shader = shader;
-				if (_opacity != 255)
-				{
-					paint.SetColor(new SKColorF(1.0f, 1.0f, 1.0f, _opacity / 255.0f), _colorSpace);
-				}
-				canvas.DrawRect(destRect, paint);
-			}
-
-			canvas.Restore();
-		}
-	}
-
-
 	public class FPTexture
 	{
-		Bitmap _bitmap;
-		SKBitmap _skBitmap;
+		SKRect _tile;
 
-		public Size Size => _bitmap.Size;
+		public SKRect Tile => _tile;
+		public SKSize Size => _tile.Size;
 
+		
 
 		public FPTexture(string fileName)
 		{
-			using var stream = AssetLoader.Open(new Uri($"avares://IronJumpAvalonia/Assets/{fileName}"));
-			using MemoryStream memory = new MemoryStream();
-			stream.CopyTo(memory);
-			memory.Seek(0, SeekOrigin.Begin);
-			_bitmap = new Bitmap(memory);
-			memory.Seek(0, SeekOrigin.Begin);
-			_skBitmap = SKBitmap.Decode(memory);
-		}
-
-		public void Draw(DrawingContext context, float X, float Y, int widthSegments = 1, int heightSegments = 1, int opacity = 255)
-		{
-			if (widthSegments == 1 && heightSegments == 1)
+			switch (fileName.ToLowerInvariant().Split(".").FirstOrDefault())
 			{
-				using var opacityState = context.PushOpacity(opacity / 255.0);
-				context.DrawImage(_bitmap, new Rect(X, Y, Size.Width, Size.Height));
+				case "ball": _tile = SKRect.Create(1.0f, 1.0f, 32.0f, 32.0f); break;
+				case "diamond": _tile = SKRect.Create(34.0f, 1.0f, 32.0f, 32.0f); break;
+				case "marbleblue": _tile = SKRect.Create(34.0f, 34.0f, 32.0f, 32.0f); break;
+				case "movable": _tile = SKRect.Create(100.0f, 1.0f, 32.0f, 32.0f); break;
+				case "plos_marble": _tile = SKRect.Create(133.0f, 1.0f, 32.0f, 32.0f); break;
+				case "trampoline01": _tile = SKRect.Create(166.0f, 1.0f, 64.0f, 32.0f); break;
+				case "trampoline02": _tile = SKRect.Create(231.0f, 1.0f, 64.0f, 32.0f); break;
+				case "trampoline03": _tile = SKRect.Create(296.0f, 1.0f, 64.0f, 32.0f); break;
+				case "vytah01": _tile = SKRect.Create(361.0f, 1.0f, 32.0f, 32.0f); break;
+				case "vytah02": _tile = SKRect.Create(394.0f, 1.0f, 32.0f, 32.0f); break;
+				case "vytah03": _tile = SKRect.Create(427.0f, 1.0f, 32.0f, 32.0f); break;
+				case "magnet": _tile = SKRect.Create(460.0f, 1.0f, 32.0f, 32.0f); break;
+				case "speed_symbol": _tile = SKRect.Create(1.0f, 34.0f, 32.0f, 32.0f); break;
+				case "exit": _tile = SKRect.Create(67.0f, 34.0f, 64.0f, 64.0f); break;
+				case "speed": _tile = SKRect.Create(132.0f, 34.0f, 64.0f, 64.0f); break;
 			}
-			else
-			{
-				var destRect = new Rect(X, Y, Size.Width * widthSegments, Size.Height * heightSegments);
-				context.Custom(new FPTextureDrawOp(_skBitmap, destRect, opacity));
-			}
-		}
-
-		public void Draw(DrawingContext context, float X, float Y, float Rotation)
-		{
-			var t1 = Matrix.CreateTranslation(-Size.Width / 2.0, -Size.Height / 2);
-			var t2 = Matrix.CreateTranslation(X + Size.Width / 2.0, Y + Size.Height / 2);
-			var r = Matrix.CreateRotation(Rotation * Math.PI / 180.0);
-			using var state = context.PushTransform(t1 * r * t2);
-			context.DrawImage(_bitmap, new Rect(0, 0, Size.Width, Size.Height));
 		}
 	}
+
+	public class FPDrawBuilder
+	{
+		static SKImage _atlasImage = null;
+
+		List<SKRect> _tiles = new List<SKRect>();
+		List<SKRotationScaleMatrix> _transforms = new List<SKRotationScaleMatrix>();
+		List<SKColor> _colors = new List<SKColor>();
+
+		DrawingContext _context;
+		Rect _bounds;
+
+		public DrawingContext Context => _context;
+		public Rect Bounds => _bounds;
+
+		class AtlasDrawOperation : ICustomDrawOperation
+		{
+			SKImage _image;
+			Rect _bounds;
+			SKRect[] _tiles;
+			SKRotationScaleMatrix[] _transforms;
+			SKColor[] _colors;
+
+			public AtlasDrawOperation(SKImage image, Rect bounds, SKRect[] tiles, SKRotationScaleMatrix[] transforms, SKColor[] colors)
+			{
+				_image = image;
+				_bounds = bounds;
+				_tiles = tiles;
+				_transforms = transforms;
+				_colors = colors;
+			}
+
+			public Rect Bounds => _bounds;
+
+			public void Dispose() { }
+
+			public bool Equals(ICustomDrawOperation? other) => false;
+
+			public bool HitTest(Point p) => false;
+
+			public void Render(ImmediateDrawingContext context)
+			{
+				var leaseFeature = context.TryGetFeature<ISkiaSharpApiLeaseFeature>();
+				if (leaseFeature == null)
+					return;
+
+				using var lease = leaseFeature.Lease();
+				var canvas = lease.SkCanvas;
+
+				canvas.Save();
+
+				using (SKPaint paint = new SKPaint())
+				{
+					canvas.DrawAtlas(_image, _tiles, _transforms, _colors, SKBlendMode.Modulate, paint);
+				}
+
+				canvas.Restore();
+			}
+		}
+
+		public FPDrawBuilder(DrawingContext context, Rect bounds)
+		{
+			_context = context;
+			_bounds = bounds;
+		}
+
+		public void AddSprite(FPTexture texture, float X, float Y, int widthSegments = 1, int heightSegments = 1, int opacity = 255)
+		{
+			var tile = texture.Tile;
+			float w = texture.Size.Width;
+			float h = texture.Size.Height;
+			for (int y = 0; y < heightSegments; y++)
+			{
+				for (int x = 0; x < widthSegments; x++)
+				{
+					float tx = X + x * w;
+					float ty = Y + y * h;
+
+					if (tx > _bounds.Right || tx + w < _bounds.Left ||
+						ty > _bounds.Bottom || ty + w < _bounds.Top)
+						continue;
+
+					_tiles.Add(tile);
+					_transforms.Add(SKRotationScaleMatrix.CreateTranslation(tx, ty));
+					_colors.Add(new SKColor(255, 255, 255, 255));
+				}
+			}
+		}
+
+		public void AddSprite(FPTexture texture, float X, float Y, float Rotation)
+		{
+			float w = texture.Size.Width;
+			float h = texture.Size.Height;
+			_tiles.Add(texture.Tile);
+			_transforms.Add(SKRotationScaleMatrix.Create(1.0f, Rotation * MathF.PI / 180.0f, X + w / 2.0f, Y + h / 2.0f, w / 2.0f, h / 2.0f));
+			_colors.Add(new SKColor(255, 255, 255, 255));
+		}
+
+		public void AddSprite(FPTexture texture, float X, float Y, SKColor color)
+		{
+			float w = texture.Size.Width;
+			float h = texture.Size.Height;
+			_tiles.Add(texture.Tile);
+			_transforms.Add(SKRotationScaleMatrix.CreateTranslation(X, Y));
+			_colors.Add(color);
+		}
+
+		public void DrawAll()
+		{
+			if (_atlasImage == null)
+			{
+				using var stream = AssetLoader.Open(new Uri($"avares://IronJumpAvalonia/Assets/levelatlas.png"));
+				_atlasImage = SKImage.FromEncodedData(stream);
+			}
+
+			_context.Custom(new AtlasDrawOperation(_atlasImage, _bounds, _tiles.ToArray(), _transforms.ToArray(), _colors.ToArray()));
+		}
+	}
+	
 }

@@ -307,11 +307,11 @@ namespace IronJumpAvalonia.Game
             }
         }
 
-        public bool Draw(DrawingContext context, Rect bounds)
+        public bool Draw(FPDrawBuilder drawBuilder, Rect bounds)
         {
             if (Rect.Intersects(bounds))
             {
-                _elevatorTextures[textureIndex].Draw(context, X, Y, WidthSegments);
+                drawBuilder.AddSprite(_elevatorTextures[textureIndex], X, Y, WidthSegments);
                 return true;
             }
             return false;
@@ -382,19 +382,19 @@ namespace IronJumpAvalonia.Game
             
         }
 
-        public bool Draw(DrawingContext context, Rect bounds)
+        public bool Draw(FPDrawBuilder drawBuilder, Rect bounds)
         {
             bool endIsVisible = false;
             if (Rect.Intersects(bounds))
             {
-                FPElevator.ElevatorTexture.Draw(context, X, Y, WidthSegments, heightSegments: 1, opacity: 100);
+                drawBuilder.AddSprite(FPElevator.ElevatorTexture, X, Y, WidthSegments, heightSegments: 1, opacity: 100);
                 endIsVisible = true;
             }
 
             var start = elevatorStart.Rect;
             var end = this.Rect;
 
-			context.DrawLine(new Pen(Brushes.Green), start.MiddlePoint(), end.MiddlePoint());
+			drawBuilder.Context.DrawLine(new Pen(Brushes.Green), start.MiddlePoint(), end.MiddlePoint());
             return endIsVisible;
         }
 

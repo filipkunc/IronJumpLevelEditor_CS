@@ -8,6 +8,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia;
 using Avalonia.Platform;
+using SkiaSharp;
 
 namespace IronJumpAvalonia.Game
 {
@@ -18,7 +19,6 @@ namespace IronJumpAvalonia.Game
 
         public static void InitTextures()
         {
-			
 			playerTexture = new FPTexture("ball.png");
 			jumpTexture = new FPTexture("speed.png");
 		}
@@ -76,26 +76,24 @@ namespace IronJumpAvalonia.Game
             Y += offsetY;
         }
 
-        public bool Draw(DrawingContext context, Rect bounds)
+        public bool Draw(FPDrawBuilder drawBuilder, Rect bounds)
         {
             if (Rect.Intersects(bounds))
             {
-                playerTexture.Draw(context, X, Y, Rotation);
+                drawBuilder.AddSprite(playerTexture, X, Y, Rotation);
                 return true;
             }
             return false;
         }
 
-        public void DrawSpeedUp(DrawingContext context)
+        public void DrawSpeedUp(FPDrawBuilder drawBuilder, Rect bounds)
         {
-            //if (SpeedUpCounter <= 0)
-            //    return;
+            if (SpeedUpCounter <= 0)
+                return;
 
-            //float value = Math.Abs(FPMath.sinf(Alpha)) * 0.5f + 0.5f;
-            //canvas.SetCurrentColor(Color.FromArgb((int)(255 * value), Color.White));
-
-            //PointF position = new PointF(X - 16.0f, Y - 16.0f);
-            //jumpTexture.Draw(position);
+            float value = Math.Abs(FPMath.sinf(Alpha)) * 0.5f + 0.5f;
+            SKColor color = new SKColor(255, 255, 255, (byte)(255 * value));
+            drawBuilder.AddSprite(jumpTexture, X - 16.0f, Y - 16.0f, color);
         }
 
         public FPGameObject Duplicate(float offsetX, float offsetY)

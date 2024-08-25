@@ -74,11 +74,11 @@ namespace IronJumpAvalonia.Game
             CollisionUpDown(game);
         }
 
-        public bool Draw(DrawingContext context, Rect bounds)
+        public bool Draw(FPDrawBuilder drawBuilder, Rect bounds)
         {
             if (Rect.Intersects(bounds))
             {
-                _movableTexture.Draw(context, X, Y, WidthSegments, HeightSegments);
+                drawBuilder.AddSprite(_movableTexture, X, Y, WidthSegments, HeightSegments);
                 return true;
             }
             return false;

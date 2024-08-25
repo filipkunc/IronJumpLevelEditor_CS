@@ -16,6 +16,7 @@ using IronJumpAvalonia.Game;
 using System.Xml.Linq;
 using Avalonia.Diagnostics;
 using System.Diagnostics;
+using System.IO;
 
 namespace IronJumpAvalonia.Controls
 {
@@ -153,12 +154,29 @@ namespace IronJumpAvalonia.Controls
 			InvalidateVisual();
 		}
 
+		public void SaveLevel(Stream stream)
+		{
+			XElement root = new XElement("IronJumpLevel");
+			foreach (var gameObject in _gameObjects)
+			{
+				if (gameObject is FPElevatorEnd)
+					continue;
+
+				XElement gameObjectElement = new XElement(gameObject.GetType().Name);
+				gameObject.WriteToElement(gameObjectElement);
+				root.Add(gameObjectElement);
+			}
+			root.Save(stream);
+			_undoManager.DocumentSaved();
+		}
+
 		public void Play()
 		{
 			var gameWindow = new GameWindow();
 			gameWindow.Width = 480;
 			gameWindow.Height = 320;
 			gameWindow.Game = new FPGame(480, 320, _gameObjects);
+			gameWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
 			gameWindow.Show();
 		}
 
@@ -770,16 +788,16 @@ namespace IronJumpAvalonia.Controls
 
 		public override void Render(DrawingContext context)
 		{
-			Stopwatch sw = Stopwatch.StartNew();
-
 			var bounds = ClippedBounds;
 			context.FillRectangle(_backBrush, bounds);
 			DrawGrid(context);
 
+			FPDrawBuilder drawBuilder = new FPDrawBuilder(context, bounds);
+
 			for (int i = 0; i < _gameObjects.Count; i++)
 			{
 				var gameObject = _gameObjects[i];
-				if (gameObject.Draw(context, bounds))
+				if (gameObject.Draw(drawBuilder, bounds))
 				{
 					if (_selectedIndices.Contains(i))
 					{
@@ -787,6 +805,8 @@ namespace IronJumpAvalonia.Controls
 					}
 				}
 			}
+
+			drawBuilder.DrawAll();
 
 			var draggedObject = this.DraggedObject;
 
@@ -798,18 +818,6 @@ namespace IronJumpAvalonia.Controls
 				context.FillRectangle(_selectionBrush, SelectionRect);
 				context.DrawRectangle(_selectionPen, SelectionRect);
 			}
-
-			sw.Stop();
-
-			FormattedText formattedText = new FormattedText(
-				$"Frame time: {sw.ElapsedMilliseconds}ms",
-				CultureInfo.GetCultureInfo("en-us"),
-				FlowDirection.LeftToRight,
-				new Typeface("Verdana"),
-				16,
-				Brushes.White);
-
-			context.DrawText(formattedText, -Bounds.Position);
 		}
 	}
 }

@@ -44,11 +44,11 @@ namespace IronJumpAvalonia.Game
             Y += offsetY;
         }
 
-        public bool Draw(DrawingContext context, Rect bounds)
+        public bool Draw(FPDrawBuilder drawBuilder, Rect bounds)
         {
             if (Rect.Intersects(bounds))
             {
-                _exitTexture.Draw(context, X, Y);
+                drawBuilder.AddSprite(_exitTexture, X, Y);
                 return true;
             }
             return false;

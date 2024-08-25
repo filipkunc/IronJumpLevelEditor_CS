@@ -35,6 +35,26 @@ namespace IronJumpAvalonia.Views
 			}
 		}
 
+		private async void SaveLevel_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+		{
+			// Get top level from the current control. Alternatively, you can use Window reference instead.
+			var topLevel = TopLevel.GetTopLevel(this);
+
+			// Start async operation to open the dialog.
+			var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+			{
+				Title = "Save Level",
+				DefaultExtension = "xlevel"
+			});
+
+			if (file != null)
+			{
+				// Open reading stream from the first file.
+				await using var stream = await file.OpenWriteAsync();
+				levelEditor.SaveLevel(stream);
+			}
+		}
+
 		private void GamePlay_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
 		{
 			levelEditor.Play();
