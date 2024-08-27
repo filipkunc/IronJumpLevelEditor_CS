@@ -25,12 +25,14 @@ namespace IronJumpAvalonia.Controls
 		public FPGame Game { get; set; }
 		HashSet<int> _pressedKeys = new HashSet<int>();
 		float _lastAcceleration = 0.0f;
+		TopLevel _topLevel;
+		TimeSpan _lastTime = TimeSpan.Zero;
 
 		protected override void OnLoaded(RoutedEventArgs e)
 		{
 			base.OnLoaded(e);
-			var topLevel = TopLevel.GetTopLevel(this);
-			topLevel.RendererDiagnostics.DebugOverlays = RendererDebugOverlays.Fps;
+			_topLevel = TopLevel.GetTopLevel(this);
+			_topLevel.RendererDiagnostics.DebugOverlays = RendererDebugOverlays.Fps;
 
 			try
 			{
@@ -42,18 +44,24 @@ namespace IronJumpAvalonia.Controls
 			this.Focusable = true;
 			this.FocusAdorner = null;
 			this.Focus();
-			DispatcherTimer.Run(new Func<bool>(() =>
+			AnimationUpdate(TimeSpan.Zero);
+		}
+
+		void AnimationUpdate(TimeSpan timeSpan)
+		{
+			if (Game != null)
 			{
-				if (Game != null)
+				Game.Resize((float)_topLevel.Width, (float)_topLevel.Height);
+				var frameTime = TimeSpan.FromMilliseconds(16);
+				if (timeSpan - _lastTime > frameTime)
 				{
-					Game.Width = (float)topLevel.Width;
-					Game.Height = (float)topLevel.Height;
 					Game.Update();
-					ResetIfGameOver();
-					InvalidateVisual();
+					_lastTime = timeSpan;
 				}
-				return true;
-			}), TimeSpan.FromMilliseconds(8));
+				ResetIfGameOver();
+				InvalidateVisual();
+			}
+			_topLevel.RequestAnimationFrame(AnimationUpdate);
 		}
 
 		private void Accelerometer_ReadingChanged(object? sender, AccelerometerChangedEventArgs e)

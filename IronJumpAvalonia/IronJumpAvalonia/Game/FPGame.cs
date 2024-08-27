@@ -28,10 +28,10 @@ namespace IronJumpAvalonia.Game
 
         Vector _backgroundOffset;
 
-        public Vector InputAcceleration { get; set; }
+		public Vector InputAcceleration { get; set; }
 
-        public float Width { get; set; }
-        public float Height { get; set; }
+        public float Width { get; private set; }
+        public float Height { get; private set; }
 
         public int DiamondsPicked { get { return _diamondsPicked; } }
         public int DiamondsCount { get { return _diamondsCount; } }
@@ -97,6 +97,22 @@ namespace IronJumpAvalonia.Game
             }
         }
 
+        public void Resize(float width, float height)
+        {
+            if (Width != width || Height != height)
+            {
+                Width = width;
+                Height = height;
+                float oldPlayerX = _player.X;
+                float oldPlayerY = _player.Y;
+                float newPlayerX = width / 2.0f - 32.0f / 2.0f;
+                float newPlayerY = height / 2.0f - 32.0f / 2.0f;
+                float offsetX = newPlayerX - oldPlayerX;
+                float offsetY = newPlayerY - oldPlayerY;
+                _player.Move(offsetX, offsetY);
+                MoveWorld(offsetX, offsetY);
+            }
+        }
         public void Update()
         {
             _diamondsPicked = 0;
@@ -130,7 +146,10 @@ namespace IronJumpAvalonia.Game
             Vector offset = new Vector(FPMath.fmodf((float)_backgroundOffset.X, 32.0f) - 32.0f,
                                        FPMath.fmodf((float)_backgroundOffset.Y, 32.0f) - 32.0f);
 
-            drawBuilder.AddSprite(_backgroundTexture, (float)offset.X, (float)offset.Y, (int)(Width / _backgroundTexture.Size.Width) + 3, (int)(Height / _backgroundTexture.Size.Height) + 2);
+            drawBuilder.AddSprite(_backgroundTexture,
+                (float)offset.X, (float)offset.Y,
+                (int)(Width / _backgroundTexture.Size.Width) + 3,
+                (int)(Height / _backgroundTexture.Size.Height) + 3);
 
             foreach (var gameObject in _gameObjects)
             {

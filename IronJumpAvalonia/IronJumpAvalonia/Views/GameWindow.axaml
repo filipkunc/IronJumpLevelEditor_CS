@@ -5,6 +5,6 @@
         mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="320"
         xmlns:cc="using:IronJumpAvalonia.Controls"
         x:Class="IronJumpAvalonia.GameWindow"
-        Title="GameWindow" CanResize="False">
+        Title="GameWindow">
   <cc:GamePlayer x:Name="gamePlayer"></cc:GamePlayer>
 </Window>
